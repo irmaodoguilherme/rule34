@@ -12,13 +12,12 @@
 
 <body class="bg-dark">
   <div data-js="image-popup" style="background-color: rgb(0 0 0 / 0.9); position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;" class="d-none">
-    <div style="position: relative; max-width: 90%; height: 100%; max-height: fit-content;">
-      <img data-js="image-container" style="max-width: 100%; max-height: 100%;" src="">
+    <div data-js="image-container" style="position: relative; max-width: 90%; height: 100%; max-height: fit-content;">
       <button data-js="button-close-popup" style="position: absolute; top: 1rem; right: 1rem;">X</button>
     </div>
   </div>
   <form data-js="form-search-by-tags" class="center-element m-4">
-    <input type="text" name="tags" placeholder="search by tags">
+    <input type="text" name="tags" placeholder="search by tags" style="color: #000000">
   </form>
   <ul data-js="media" class="d-flex flex-row gap-3 flex-wrap align-items-center p-0"></ul>
   <script src="./app.js"></script>

@@ -2,15 +2,17 @@ const formSearchByTags = document.querySelector('[data-js="form-search-by-tags"'
 const ulMedia = document.querySelector('[data-js="media"]')
 const buttonClosePopup = document.querySelector('[data-js="button-close-popup"]')
 const imagePopup = document.querySelector('[data-js="image-popup"]')
-const imageContainer = document.querySelector('[data-js="image-container"]')
 
 const obj = {}
 
 imagePopup.addEventListener('click', e => {
   const dataClickedElement = e.target.dataset.js
 
-  if(dataClickedElement != 'image-container') {
+  if (dataClickedElement != 'image') {
+    const image = document.querySelector('[data-js="image"]')
+
     imagePopup.classList.add('d-none')
+    image.remove()
   }
 })
 
@@ -21,8 +23,33 @@ ulMedia.addEventListener('click', e => {
     return
   }
 
+  const imageContainer = document.querySelector('[data-js="image-container"]')
+
+  if (mediaClickedURL.includes('.mp4')) {
+    const video = document.createElement('video')
+    const videoSource = document.createElement('source')
+
+    video.style.maxWidth = "100%"
+    video.style.maxHeight = "100%"
+    video.setAttribute('data-js', 'image')
+    video.setAttribute('controls', '')
+    videoSource.setAttribute('src', `https://api-cdn.rule34.xxx/images/${mediaClickedURL}`)
+
+    video.append(videoSource)
+    imageContainer.append(video)
+    imagePopup.classList.remove('d-none')
+    return
+  }
+
+
+  const image = document.createElement('img')
+  image.style.maxWidth = "100%"
+  image.style.maxHeight = "100%"
+  image.setAttribute('src', `https://api-cdn.rule34.xxx/images/${mediaClickedURL}`)
+  image.setAttribute('data-js', 'image')
+
+  imageContainer.append(image)
   imagePopup.classList.remove('d-none')
-  imageContainer.src = `https://api-cdn.rule34.xxx/images/${mediaClickedURL}`
 })
 
 formSearchByTags.addEventListener('submit', async e => {
