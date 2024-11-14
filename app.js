@@ -56,7 +56,6 @@ formSearchByTags.addEventListener('submit', async e => {
   e.preventDefault()
 
   const inputValue = e.target.tags.value.split(' ').join('+')
-
   const baseURL = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52'
   const response = await fetch(`${baseURL}&tags=${inputValue}`)
   const media = await response.json()

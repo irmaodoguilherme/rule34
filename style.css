@@ -8,6 +8,11 @@
   flex: 1 1 20%;
 }
 
+.test2 {
+  color: #ffabf5;
+  font-size: 1.9rem;
+}
+
 .videoBorder {
   cursor: pointer;
   border: solid 1px #00c7ff
