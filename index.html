@@ -12,16 +12,44 @@
 </head>
 
 <body class="bg-dark">
-  <div data-js="image-popup"
-    style="background-color: rgb(0 0 0 / 0.9); position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;"
-    class="d-none">
-    <div data-js="image-container" style="position: relative; max-width: 90%; height: 100%; max-height: fit-content;">
-      <!-- <i data-js="button-close-popup" style="position: absolute; top: 1rem; right: 1rem;" class="bi bi-x-lg"></i> -->
-      <div style="position: absolute; inset: 0; background-color: #232323; max-width: 11%; max-height: 30%; top: 50%; transform: translateY(-50%); border-radius: 0 0.2rem 0.2rem 0; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly;">
-        <a href="#" class="bi bi-x-lg test2"></a>
-        <a href="#" class="bi bi-heart test2"></a>
-        <a href="#" class="bi bi-bookmark test2"></a>
-      </div>
+  <div style="
+    background-color: rgb(0 0 0 / 0.9);
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+">
+    <div style="
+    max-width: 90%;
+    height: 100%;
+    max-height: fit-content;
+">
+      <img src="https://api-cdn.rule34.xxx/images/2209/cff303dff4cfaba77df2303eaafc90c8.png" data-js="image" style="
+    max-width: 100%;
+    max-height: 100%;
+">
+    </div>
+    <div style="width: 4rem;
+    height: 100%;
+    background-color: #232323;
+    max-width: 10.7%;
+    max-height: 11.4rem !important;
+    border-radius: 0 0.2rem 0.2rem 0;
+    display: flex;
+    gap: 4%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;">
+      <svg class="test" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+      </svg>
+      <svg class="test" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15" />
+      </svg>
+      <svg class="test" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z" />
+      </svg>
     </div>
   </div>
   <form data-js="form-search-by-tags" class="center-element m-4">
