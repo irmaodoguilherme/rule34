@@ -1,88 +1,104 @@
-const formSearchByTags = document.querySelector('[data-js="form-search-by-tags"')
-const ulMedia = document.querySelector('[data-js="media"]')
-const buttonClosePopup = document.querySelector('[data-js="button-close-popup"]')
-const imagePopup = document.querySelector('[data-js="image-popup"]')
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
+import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js'
 
-const obj = {}
+const ulMedia = document.querySelector('[data-js="media-list"]')
+const mediaPopup = document.querySelector('[data-js="media-popup"]')
+const mediaContainer = document.querySelector('[data-js="media-container"]')
+const formFetchMedia = document.querySelector('[data-js="form-fetch-media"]')
+const buttonDownload = document.querySelector('[data-js="download-media"]')
+const buttonLikeMedia = document.querySelector('[data-js="like-media"]')
+const buttonBookmarkMedia = document.querySelector('[data-js="bookmark-media"]')
 
-imagePopup.addEventListener('click', e => {
-  const dataClickedElement = e.target.dataset.js
+const firebaseConfig = {
+  apiKey: "AIzaSyC3ibhZluc8MPpS0JtFhhnzsfcdz-0W9a4",
+  authDomain: "rule34-bbfb7.firebaseapp.com",
+  projectId: "rule34-bbfb7",
+  storageBucket: "rule34-bbfb7.firebasestorage.app",
+  messagingSenderId: "734770576483",
+  appId: "1:734770576483:web:d35b20c502d60a13114c56"
+};
+const app = initializeApp(firebaseConfig)
+const db = getFirestore(app)
+const collectionMedia = collection(db, 'media')
 
-  if (dataClickedElement != 'image') {
-    const image = document.querySelector('[data-js="image"]')
-
-    imagePopup.classList.add('d-none')
-    image.remove()
-  }
-})
-
-ulMedia.addEventListener('click', e => {
-  const mediaClickedURL = e.target.dataset.js
-
-  if (!mediaClickedURL) {
-    return
-  }
-
-  const imageContainer = document.querySelector('[data-js="image-container"]')
-
-  if (mediaClickedURL.includes('.mp4')) {
-    const video = document.createElement('video')
-    const videoSource = document.createElement('source')
-
-    video.style.maxWidth = "100%"
-    video.style.maxHeight = "100%"
-    video.setAttribute('data-js', 'image')
-    video.setAttribute('controls', '')
-    videoSource.setAttribute('src', `https://api-cdn.rule34.xxx/images/${mediaClickedURL}`)
-
-    video.append(videoSource)
-    imageContainer.append(video)
-    imagePopup.classList.remove('d-none')
-    return
-  }
-
-
-  const image = document.createElement('img')
-  image.style.maxWidth = "100%"
-  image.style.maxHeight = "100%"
-  image.setAttribute('src', `https://api-cdn.rule34.xxx/images/${mediaClickedURL}`)
-  image.setAttribute('data-js', 'image')
-
-  imageContainer.append(image)
-  imagePopup.classList.remove('d-none')
-})
-
-formSearchByTags.addEventListener('submit', async e => {
+formFetchMedia.addEventListener('submit', async e => {
   e.preventDefault()
 
-  const inputValue = e.target.tags.value.split(' ').join('+')
-  const baseURL = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52'
-  const response = await fetch(`${baseURL}&tags=${inputValue}`)
-  const media = await response.json()
+  const tags = e.target.tags.value.split(' ').join('+')
+  const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=10&tags=${tags}`)
+  const fetchedMedia = await response.json()
   const documentFragment = document.createDocumentFragment()
 
-  media.forEach(item => {
-    const { preview_url: previewUrl, file_url: fileUrl, image } = item
+  fetchedMedia.forEach(media => {
+    const mediaLi = document.createElement('li')
+    mediaLi.classList.add('media')
 
-    const liItem = document.createElement('li')
-    liItem.setAttribute('class', 'd-flex justify-content-center test')
+    const mediaImg = document.createElement('img')
+    mediaImg.src = media.preview_url
+    mediaImg.classList.add('clickable')
+    mediaImg.setAttribute('data-mediaUrl', media.file_url)
 
-    const imgItem = document.createElement('img')
-    imgItem.setAttribute('data-js', `${fileUrl.slice(fileUrl.indexOf('s/') + 2, fileUrl.length)}`)
-    imgItem.src = previewUrl
-
-    image.includes('.mp4') ? imgItem.classList.add('videoBorder') : imgItem.style.cursor = 'pointer'
-
-    liItem.append(imgItem)
-    documentFragment.append(liItem)
+    mediaLi.append(mediaImg)
+    documentFragment.append(mediaLi)
   })
 
   ulMedia.innerHTML = ''
   ulMedia.append(documentFragment)
-
-  e.target.tags.focus()
 })
 
-/*
-https://api-cdn.rule34.xxx/images/2201/8c62233a4bd7215a1322f5e36d7e203c.png
-*/
+ulMedia.addEventListener('click', e => {
+  const dataMedia = e.target.dataset.mediaurl
+
+  if (!dataMedia) {
+    return
+  }
+
+  const mediaImg = document.createElement('img')
+  mediaImg.src = dataMedia
+  mediaImg.classList.add('media')
+  mediaImg.setAttribute('data-js', 'media')
+  buttonDownload.href = dataMedia
+
+  mediaContainer.append(mediaImg)
+  mediaPopup.classList.remove('hide')
+})
+
+mediaPopup.addEventListener('click', e => {
+  const dataClose = e.target.dataset.js
+
+  if (dataClose === 'close-popup' || dataClose === undefined) {
+    const media = document.querySelector('[data-js="media"]')
+
+    mediaPopup.classList.add('hide')
+    media.remove()
+  }
+})
+
+// buttonClosePopup.addEventListener('click', () => {
+//   const media = document.querySelector('[data-js="media"]')
+
+//   mediaPopup.classList.add('hide')
+
+//   if (media) {
+//     media.remove()
+//   }
+// })
+
+buttonLikeMedia.addEventListener('click', async () => {
+  const media = document.querySelector('[data-js="media"]')
+  const mediaUrl = media.src
+
+  buttonLikeMedia.classList.toggle('bi-heart')
+  buttonLikeMedia.classList.toggle('bi-heart-fill')
+
+  await addDoc(collectionMedia, {
+    fileUrl: mediaUrl
+  })
+})
+
+buttonBookmarkMedia.addEventListener('click', () => {
+  buttonBookmarkMedia.classList.toggle('bi-bookmark')
+  buttonBookmarkMedia.classList.toggle('bi-bookmark-fill')
+})
+
+/* https://api-cdn.rule34.xxx/images/2201/8c62233a4bd7215a1322f5e36d7e203c.png */
