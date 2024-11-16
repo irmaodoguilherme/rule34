@@ -27,11 +27,11 @@ formFetchMedia.addEventListener('submit', async e => {
   const tags = e.target.tags.value.split(' ').join('+')
   const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=10&tags=${tags}`)
   const fetchedMedia = await response.json()
-  const documentFragment = document.createDocumentFragment()
+  const documentFragment = new DocumentFragment()
 
   fetchedMedia.forEach(media => {
     const mediaLi = document.createElement('li')
-    mediaLi.classList.add('media')
+    mediaLi.classList.add('custom')
 
     const mediaImg = document.createElement('img')
     mediaImg.src = media.preview_url
