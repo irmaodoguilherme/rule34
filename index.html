@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <title>New Rule34</title>
 </head>
+
 <body>
   <div class="media-popup hide" data-js="media-popup">
     <div class="x">
@@ -21,10 +23,25 @@
     </div>
   </div>
   </div>
-  <form data-js="form-fetch-media" class="form-fetch-media">
+  <!-- <form data-js="form-fetch-media" class="form-fetch-media">
     <input type="text" name="tags" placeholder="Search by tags" autocomplete="off" class="input-fetch-media">
-  </form>
+  </form> -->
+  <ul class="nav-bar">
+    <li class="button-container">
+      <i class="nav-bar-button bi bi-house"></i>
+      <p class="nav-bar-label">Home</p>
+    </li>
+    <li class="button-container search-button-container" data-button="search">
+      <i class="nav-bar-button bi bi-search search-button"></i>
+      <p class="nav-bar-label search-button-label">Search</p>
+    </li>
+    <li class="button-container">
+      <i class="nav-bar-button bi bi-person"></i>
+      <p class="nav-bar-label">Profile</p>
+    </li>
+  </ul>
   <ul class="media-list" data-js="media-list"></ul>
   <script type="module" src="./app.js"></script>
 </body>
+
 </html>

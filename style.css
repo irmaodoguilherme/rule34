@@ -6,12 +6,15 @@
 
 body {
   background-color: #0a0a0a;
+  color: #ffffff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 .media-popup {
   position: fixed;
   inset: 0;
   background-color: rgb(0 0 0 / 0.9);
+  z-index: 1;
 }
 
 .x {
@@ -109,7 +112,7 @@ li::marker {
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
   border-radius: 0.1rem;
-  outline: 1px solid #b4b4b4;
+  outline: 1px solid #ffffff;
   font-size: 0.9rem;
   padding: 0.3rem;
 }
@@ -146,4 +149,97 @@ li::marker {
   height: 100%;
   align-items: center;
   justify-content: space-between;
+}
+
+/*  */
+
+.nav-bar {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  position: sticky;
+  top: 0px;
+  width: 100%;
+  min-width: 20rem;
+  background-color: rgb(39 39 39);
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  max-width: 4.1rem;
+  min-width: 4.1rem;
+}
+
+.nav-bar-button {
+  font-size: 1.5rem;
+}
+
+.search-button-container {
+  position: relative;
+}
+
+.search-button {
+  margin-inline: auto;
+  height: 100%;
+}
+
+.search-button-label {
+  position: absolute;
+  display: grid;
+  place-items: end;
+  height: 100%;
+}
+
+/* .form-search-container {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  bottom: 0px;
+  width: 100%;
+  text-align: center;
+  transition: bottom .2s ease-in-out;
+} */
+
+.form-search {
+  display: flex;
+}
+
+.form-show {
+  bottom: 3.4rem;
+}
+
+li::marker {
+  content: '';
+}
+
+@media (max-width: 355px) {
+  body {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .nav-bar {
+    bottom: 0px;
+  }
+}
+
+.input-search {
+  margin-top: auto;
+  margin-bottom: auto;
+  max-width: 4.1rem;
+  max-height: 2.1rem;
+  width: 100%;
+  height: 100%;
+  outline: 1px solid #ffffff;
+  color: #ffffff;
+  font-size: 1rem;
+  transition: max-width .2s ease-in-out;
+  background-color: rgb(0 0 0 / 0);
+}
+
+.input-search:focus-within {
+  max-width: 10.4rem;
 }
