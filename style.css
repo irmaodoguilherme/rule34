@@ -215,7 +215,7 @@ li::marker {
   content: '';
 }
 
-@media (max-width: 355px) {
+@media (max-width: 720px) {
   body {
     display: flex;
     flex-direction: column-reverse;
