@@ -75,6 +75,7 @@ ulMedia.addEventListener('click', e => {
     mediaVideo.setAttribute('data-Owner', mediaOwner)
     mediaVideo.setAttribute('data-Tags', mediaTags)
     mediaVideo.setAttribute('data-image', mediaImage)
+    mediaVideo.classList.add('video')
     mediaVideo.src = mediaFileUrl
 
     mediaContainer.append(mediaVideo)

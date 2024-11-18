@@ -264,3 +264,7 @@ li::marker {
 .video-outline {
   outline: 2px solid rgb(0 100 255);
 }
+
+.video {
+  max-width: 100%;
+}
