@@ -183,3 +183,5 @@ buttonHome.addEventListener('click', async () => {
 })
 
 /* https://api-cdn.rule34.xxx/images/2201/8c62233a4bd7215a1322f5e36d7e203c.png */
+
+let x;
