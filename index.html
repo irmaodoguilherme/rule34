@@ -11,7 +11,7 @@
 
 <body>
   <div class="media-popup hide" data-js="media-popup">
-    <div class="x">
+    <div class="x" data-js="x">
       <div class="media-container" data-js="media-container">
         <div class="media-buttons">
           <button class="media-button bi bi-x-lg" data-js="close-popup"></button>
@@ -23,19 +23,15 @@
     </div>
   </div>
   </div>
-  <!-- <form data-js="form-fetch-media" class="form-fetch-media">
-    <input type="text" name="tags" placeholder="Search by tags" autocomplete="off" class="input-fetch-media">
-  </form> -->
   <ul class="nav-bar">
-    <li class="button-container">
+    <li class="button-container" data-button="home">
       <i class="nav-bar-button bi bi-house"></i>
       <p class="nav-bar-label">Home</p>
     </li>
-    <li class="button-container search-button-container" data-button="search">
-      <i class="nav-bar-button bi bi-search search-button"></i>
-      <p class="nav-bar-label search-button-label">Search</p>
-    </li>
-    <li class="button-container">
+    <form class='form-search' data-js='form-search'>
+      <input class='input-search' name='tags' placeholder='Search'></input>
+    </form>
+    <li class="button-container" data-button="profile">
       <i class="nav-bar-button bi bi-person"></i>
       <p class="nav-bar-label">Profile</p>
     </li>
