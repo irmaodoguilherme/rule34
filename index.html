@@ -13,15 +13,35 @@
   <div class="media-popup hide" data-js="media-popup">
     <div class="x" data-js="x">
       <div class="media-container" data-js="media-container">
-        <div class="media-buttons">
-          <button class="media-button bi bi-x-lg" data-js="close-popup"></button>
-          <button class="media-button bi bi-heart" data-js="like-media"></button>
-          <button class="media-button bi bi-bookmark" data-js="bookmark-media"></button>
-          <a href="" target="_blank" class="media-button bi bi-download" data-js="download-media"></a>
-        </div>
+      </div>
+      <div class="media-buttons hide" data-js="media-buttons">
+        <button class="media-button bi bi-x-lg" data-js="close-popup"></button>
+        <button class="media-button bi bi-heart" data-js="like-media"></button>
+        <button class="media-button bi bi-bookmark" data-js="bookmark-media"></button>
+        <a href="" target="_blank" class="media-button bi bi-download" data-js="download-media"></a>
       </div>
     </div>
   </div>
+  </div>
+  <div data-js="offcanvas-popup" class="media-popup hide">
+    <ul data-js="offcanvas" class="offcanvas bg-dark-gray position-absolute text-center">
+      <li class="offcanvas-item" data-button="show-likes">
+        <i class="bi bi-heart"></i>
+        <p>Likes</p>
+      </li>
+      <li class="offcanvas-item" data-button="show-bookmarks">
+        <i class="bi bi-bookmark"></i>
+        <p>Bookmarks</p>
+      </li>
+      <li class="offcanvas-item" data-button="show-activity">
+        <i class="bi bi-activity"></i>
+        <p>Activity</p>
+      </li>
+      <li class="offcanvas-item" data-button="logout">
+        <i class="bi bi-box-arrow-in-right"></i>
+        <p>Logout</p>
+      </li>
+    </ul>
   </div>
   <ul class="nav-bar">
     <li class="button-container" data-button="home">
@@ -31,9 +51,13 @@
     <form class='form-search' data-js='form-search'>
       <input class='input-search' name='tags' placeholder='Search'></input>
     </form>
-    <li class="button-container" data-button="profile">
+    <li class="button-container hide" data-button="profile">
       <i class="nav-bar-button bi bi-person"></i>
       <p class="nav-bar-label">Profile</p>
+    </li>
+    <li class="button-container hide" data-button="login">
+      <i class="nav-bar-button bi bi-box-arrow-in-right"></i>
+      <p class="nav-bar-label">Login</p>
     </li>
   </ul>
   <ul class="media-list" data-js="media-list"></ul>
