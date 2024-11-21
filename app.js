@@ -186,7 +186,7 @@ const bookmarkMedia = async userid => {
   })
 }
 
-buttonLogin.addEventListener('click', () => signInWithPopup(auth, provider))
+buttonLogin.addEventListener('click', async() => await signInWithPopup(auth, provider))
 
 buttonHome.addEventListener('click', async () => {
   ulMedia.innerHTML = ''
@@ -207,8 +207,8 @@ offcanvasPopup.addEventListener('click', e => {
   }
 })
 
-buttonLogout.addEventListener('click', () => {
-  signOut(auth)
+buttonLogout.addEventListener('click', async () => {
+  await signOut(auth)
   offcanvas.classList.remove('show-offcanvas')
   setTimeout(() => offcanvasPopup.classList.add('hide'), 250)
 })
