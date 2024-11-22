@@ -167,11 +167,11 @@ li::marker {
   justify-content: center;
   gap: 4rem;
   position: sticky;
-  top: 0px;
   width: 100%;
   min-width: 20rem;
   background-color: rgb(39 39 39);
   margin-bottom: 2rem;
+  top: 0px;
 }
 
 .button-container {
@@ -226,11 +226,6 @@ li::marker {
 }
 
 @media (max-width: 420px) {
-  body {
-    display: flex;
-    flex-direction: column-reverse;
-  }
-
   .nav-bar {
     bottom: 0px;
     min-width: min-content;
@@ -305,9 +300,54 @@ li::marker {
   transition: background-color .2s ease-in-out;
   cursor: pointer;
   padding-bottom: 0.3rem;
-  padding-top	: 0.3rem;
+  padding-top: 0.3rem;
 }
 
 .offcanvas-item:hover {
   background-color: rgb(46 46 46);
+}
+
+.page-buttons-container {
+  max-width: fit-content;
+  margin-inline: auto;
+  padding-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.input-page-number-container {
+  max-height: fit-content;
+}
+
+.input-page-number {
+  border: none;
+  display: grid;
+  place-content: center;
+  font-size: 1.3rem;
+  color: #ffffff;
+  background-color: rgb(0 0 0 / 0);
+  border-bottom: 2px solid #ffffff;
+  max-width: 3rem;
+}
+
+.buttons-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.page-button {
+  border: none;
+  font-size: 1.5rem;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  background-color: rgb(0 0 0 / 0);
+  color: #ffffff;
+}
+
+.current-page {
+  font-size: 1.5rem;
+  cursor: default;
+  color: #ffffff;
 }

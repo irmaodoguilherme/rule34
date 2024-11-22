@@ -19,6 +19,11 @@ const offcanvas = document.querySelector('[data-js="offcanvas"]')
 const offcanvasPopup = document.querySelector('[data-js="offcanvas-popup"]')
 const buttonShowActivity = document.querySelector('[data-button="show-activity"]')
 const mediaButtons = document.querySelector('[data-js="media-buttons"]')
+const pageButtons = document.querySelector('[data-js="page-buttons"]')
+const buttonDecrementPage = document.querySelector('[data-button="decrement-page"]')
+const displayCurrentPage = document.querySelector('[data-js="current-page"]')
+const buttonIncrementPage = document.querySelector('[data-button="increment-page"]')
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3ibhZluc8MPpS0JtFhhnzsfcdz-0W9a4",
@@ -32,7 +37,7 @@ const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
 const collectionMedia = collection(db, 'media')
 const provider = new GoogleAuthProvider()
-const auth = getAuth()
+const auth = getAuth(app)
 
 formFetchMedia.addEventListener('submit', async e => {
   e.preventDefault()
@@ -64,6 +69,7 @@ formFetchMedia.addEventListener('submit', async e => {
   })
 
   ulMedia.innerHTML = ''
+  pageButtons.classList.remove('hide')
   ulMedia.append(documentFragment)
 })
 
@@ -314,6 +320,80 @@ buttonShowBookmarks.addEventListener('click', async () => {
   ulMedia.append(documentFragment)
 })
 
+buttonDecrementPage.addEventListener('click', async () => {
+  if(formFetchMedia.tags.value === '') {
+    return
+  }
+
+  const pageId = Number(displayCurrentPage.textContent) - 1
+  const tags = formFetchMedia.tags.value.split(' ').join('+')
+  const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52&tags=${tags}&pid=${pageId}`)
+  const fetchedMedia = await response.json()
+  const documentFragment = new DocumentFragment()
+
+  fetchedMedia.forEach(media => {
+    const mediaLi = document.createElement('li')
+    mediaLi.classList.add('custom')
+
+    const mediaImg = document.createElement('img')
+    mediaImg.src = media.preview_url
+    mediaImg.classList.add('clickable')
+    mediaImg.setAttribute('data-fileUrl', media.file_url)
+    mediaImg.setAttribute('data-Id', media.id)
+    mediaImg.setAttribute('data-Owner', media.owner)
+    mediaImg.setAttribute('data-Tags', media.tags)
+    mediaImg.setAttribute('data-image', media.image)
+
+    if (media.image.includes('mp4')) {
+      mediaImg.classList.add('video-outline')
+    }
+
+    mediaLi.append(mediaImg)
+    documentFragment.append(mediaLi)
+  })
+
+  ulMedia.innerHTML = ''
+  displayCurrentPage.textContent = pageId
+  ulMedia.append(documentFragment)
+})
+
+buttonIncrementPage.addEventListener('click', async () => {
+  if(formFetchMedia.tags.value === '') {
+    return
+  }
+
+  const pageId = Number(displayCurrentPage.textContent) + 1
+  const tags = formFetchMedia.tags.value.split(' ').join('+')
+  const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52&tags=${tags}&pid=${pageId}`)
+  const fetchedMedia = await response.json()
+  const documentFragment = new DocumentFragment()
+
+  fetchedMedia.forEach(media => {
+    const mediaLi = document.createElement('li')
+    mediaLi.classList.add('custom')
+
+    const mediaImg = document.createElement('img')
+    mediaImg.src = media.preview_url
+    mediaImg.classList.add('clickable')
+    mediaImg.setAttribute('data-fileUrl', media.file_url)
+    mediaImg.setAttribute('data-Id', media.id)
+    mediaImg.setAttribute('data-Owner', media.owner)
+    mediaImg.setAttribute('data-Tags', media.tags)
+    mediaImg.setAttribute('data-image', media.image)
+
+    if (media.image.includes('mp4')) {
+      mediaImg.classList.add('video-outline')
+    }
+
+    mediaLi.append(mediaImg)
+    documentFragment.append(mediaLi)
+  })
+
+  ulMedia.innerHTML = ''
+  displayCurrentPage.textContent = pageId
+  ulMedia.append(documentFragment)
+})
+
 onAuthStateChanged(auth, user => {
   if (!user) {
     buttonLogin.classList.remove('hide')
@@ -330,4 +410,5 @@ onAuthStateChanged(auth, user => {
   buttonLikeMedia.onclick = () => likeMedia(user.uid)
   buttonBookmarkMedia.onclick = () => bookmarkMedia(user.uid)
 })
+
 /* https://api-cdn.rule34.xxx/images/2201/8c62233a4bd7215a1322f5e36d7e203c.png */
