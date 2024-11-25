@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
-import { getFirestore, collection, addDoc, getDoc, getDocs, doc, query, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js'
+import { getFirestore, collection, addDoc, setDoc, deleteDoc, updateDoc, deleteField, getDoc, getDocs, doc, query, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js'
 import { GoogleAuthProvider, getAuth, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
 
 const ulMedia = document.querySelector('[data-js="media-list"]')
@@ -23,7 +23,8 @@ const pageButtons = document.querySelector('[data-js="page-buttons"]')
 const buttonDecrementPage = document.querySelector('[data-button="decrement-page"]')
 const displayCurrentPage = document.querySelector('[data-js="current-page"]')
 const buttonIncrementPage = document.querySelector('[data-button="increment-page"]')
-
+const sortContainer = document.querySelector('[data-js="sort-container"]')
+const imageSorter = document.querySelector('[data-js="image-sorter"]')
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3ibhZluc8MPpS0JtFhhnzsfcdz-0W9a4",
@@ -42,6 +43,7 @@ const auth = getAuth(app)
 formFetchMedia.addEventListener('submit', async e => {
   e.preventDefault()
 
+  sortContainer.classList.add('hide')
   const tags = e.target.tags.value.split(' ').join('+')
   const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52&tags=${tags}`)
   const fetchedMedia = await response.json()
@@ -83,24 +85,28 @@ ulMedia.addEventListener('click', async e => {
   const [mediaPreviewUrl, mediaFileUrl, mediaId, mediaOwner, mediaTags, mediaImage] =
     [e.target.src, dataMedia.fileurl, dataMedia.id, dataMedia.owner, dataMedia.tags, dataMedia.image]
 
-  // const isMediaLiked = (await getDocs(query(collectionMedia, where('id', '==', mediaId), where('like', '!=', 'false')))).docs.length
-  // const isMediaBookmarked = (await getDocs(query(collectionMedia, where('id', '==', mediaId), where('bookmark', '!=', 'false')))).docs.length
+  const mediaRef = doc(db, 'media', mediaId)
+  const mediaSnapshot = await getDoc(mediaRef)
 
-  // if (isMediaLiked) {
-  //   buttonLikeMedia.classList.remove('bi-heart')
-  //   buttonLikeMedia.classList.add('bi-heart-fill')
-  // } else {
-  //   buttonLikeMedia.classList.remove('bi-heart-fill')
-  //   buttonLikeMedia.classList.add('bi-heart')
-  // }
+  /* Deixei dessa forma pois parece o mais simples no momento para mim. */
+  const { bookmark: isMediaBookmarked = false, like: isMediaLiked = false } =
+    mediaSnapshot.exists() ? mediaSnapshot.data() : {}
 
-  // if (isMediaBookmarked) {
-  //   buttonBookmarkMedia.classList.remove('bi-bookmark')
-  //   buttonBookmarkMedia.classList.add('bi-bookmark-fill')
-  // } else {
-  //   buttonBookmarkMedia.classList.remove('bi-bookmark-fill')
-  //   buttonBookmarkMedia.classList.add('bi-bookmark')
-  // }
+  if (isMediaLiked) {
+    buttonLikeMedia.classList.remove('bi-heart')
+    buttonLikeMedia.classList.add('bi-heart-fill')
+  } else {
+    buttonLikeMedia.classList.remove('bi-heart-fill')
+    buttonLikeMedia.classList.add('bi-heart')
+  }
+
+  if (isMediaBookmarked) {
+    buttonBookmarkMedia.classList.remove('bi-bookmark')
+    buttonBookmarkMedia.classList.add('bi-bookmark-fill')
+  } else {
+    buttonBookmarkMedia.classList.remove('bi-bookmark-fill')
+    buttonBookmarkMedia.classList.add('bi-bookmark')
+  }
 
   if (mediaImage.includes('.mp4')) {
     const mediaVideo = document.createElement('video')
@@ -128,7 +134,7 @@ ulMedia.addEventListener('click', async e => {
   mediaImg.setAttribute('data-Owner', mediaOwner)
   mediaImg.setAttribute('data-Tags', mediaTags)
   mediaImg.setAttribute('data-Image', mediaImage)
-  buttonDownload.href = dataMedia
+  buttonDownload.href = mediaFileUrl
 
   mediaContainer.append(mediaImg)
   mediaPopup.classList.remove('hide')
@@ -148,14 +154,24 @@ mediaPopup.addEventListener('click', e => {
 
 const likeMedia = async userid => {
   const media = document.querySelector('[data-js="media"]')
+  const isButtonLikeClicked = buttonLikeMedia.classList.contains('bi-heart-fill')
   const dataMedia = media.dataset
   const [mediaFileUrl, mediaPreviewUrl, mediaId, mediaOwner, mediaTags, mediaImage] =
     [media.src, dataMedia.previewurl, dataMedia.id, dataMedia.owner, dataMedia.tags, dataMedia.image]
+  const mediaRef = doc(db, 'media', mediaId)
 
-  buttonLikeMedia.classList.toggle('bi-heart')
-  buttonLikeMedia.classList.toggle('bi-heart-fill')
+  if (isButtonLikeClicked) {
+    await updateDoc(mediaRef, { like: deleteField() })
 
-  await addDoc(collectionMedia, {
+    buttonLikeMedia.classList.remove('bi-heart-fill')
+    buttonLikeMedia.classList.add('bi-heart');
+    return
+  }
+
+  buttonLikeMedia.classList.remove('bi-heart')
+  buttonLikeMedia.classList.add('bi-heart-fill')
+
+  await setDoc(mediaRef, {
     fileUrl: mediaFileUrl,
     previewurl: mediaPreviewUrl,
     id: mediaId,
@@ -164,9 +180,8 @@ const likeMedia = async userid => {
     image: mediaImage,
     time: serverTimestamp(),
     like: true,
-    bookmark: false,
     userid
-  })
+  }, { merge: true })
 }
 
 const bookmarkMedia = async userid => {
@@ -174,11 +189,21 @@ const bookmarkMedia = async userid => {
   const dataMedia = media.dataset
   const [mediaFileUrl, mediaPreviewUrl, mediaId, mediaOwner, mediaTags, mediaImage] =
     [media.src, dataMedia.previewurl, dataMedia.id, dataMedia.owner, dataMedia.tags, dataMedia.image]
+  const mediaRef = doc(db, 'media', mediaId)
+  const isButtonBookmarkClicked = buttonBookmarkMedia.classList.contains('bi-bookmark-fill')
+
+  if (isButtonBookmarkClicked) {
+    await updateDoc(mediaRef, { bookmark: deleteField() })
+
+    buttonBookmarkMedia.classList.remove('bi-bookmark-fill')
+    buttonBookmarkMedia.classList.add('bi-bookmark');
+    return
+  }
 
   buttonBookmarkMedia.classList.toggle('bi-bookmark')
   buttonBookmarkMedia.classList.toggle('bi-bookmark-fill')
 
-  await addDoc(collectionMedia, {
+  await setDoc(mediaRef, {
     fileUrl: mediaFileUrl,
     previewurl: mediaPreviewUrl,
     id: mediaId,
@@ -186,15 +211,15 @@ const bookmarkMedia = async userid => {
     tags: mediaTags,
     image: mediaImage,
     time: serverTimestamp(),
-    like: false,
     bookmark: true,
     userid
-  })
+  }, { merge: true })
 }
 
-buttonLogin.addEventListener('click', async() => await signInWithPopup(auth, provider))
+buttonLogin.addEventListener('click', async () => await signInWithPopup(auth, provider))
 
 buttonHome.addEventListener('click', async () => {
+  sortContainer.classList.add('hide')
   ulMedia.innerHTML = ''
 })
 
@@ -220,16 +245,17 @@ buttonLogout.addEventListener('click', async () => {
 })
 
 buttonShowLikes.addEventListener('click', async () => {
-  offcanvas.classList.remove('show-offcanvas')
-  setTimeout(() => offcanvasPopup.classList.add('hide'), 250)
+  sortContainer.classList.remove('hide')
   ulMedia.innerHTML = ''
   const likedMedia = await getDocs(query(collectionMedia, where('like', '!=', false)))
   const documentFragment = new DocumentFragment()
+  const documentFragment2 = new DocumentFragment()
   likedMedia.docs.forEach(doc => {
     const { fileUrl, id, owner, previewurl, tags, image, time, like, bookmark } = doc.data()
 
     const mediaLi = document.createElement('li')
     mediaLi.classList.add('custom')
+
 
     const mediaImg = document.createElement('img')
     mediaImg.src = previewurl
@@ -243,18 +269,28 @@ buttonShowLikes.addEventListener('click', async () => {
     mediaImg.setAttribute('data-like', like)
     mediaImg.setAttribute('data-bookmark', bookmark)
 
+    const tagsTemplateString = tags.split(' ').map((tag, index, array) => {
+      if (index === array.length - 1) {
+        return `<option>${tag}</option> `
+      }
+
+      return `<option>${tag}</option>`
+    }).join(' ')
+
     if (image.includes('.mp4')) {
       mediaImg.classList.add('video-outline')
     }
 
     mediaLi.append(mediaImg)
     documentFragment.append(mediaLi)
+    documentFragment2.append(tagsTemplateString)
   })
 
   ulMedia.append(documentFragment)
 })
 
 buttonShowActivity.addEventListener('click', async () => {
+  sortContainer.classList.remove('hide')
   ulMedia.innerHTML = ''
   const activity = await getDocs(collectionMedia)
   const documentFragment = new DocumentFragment()
@@ -288,12 +324,13 @@ buttonShowActivity.addEventListener('click', async () => {
 })
 
 buttonShowBookmarks.addEventListener('click', async () => {
+  sortContainer.classList.remove('hide')
   ulMedia.innerHTML = ''
   const bookmarks = await getDocs(query(collectionMedia, where('bookmark', '!=', false)))
   const documentFragment = new DocumentFragment()
+  const documentFragment2 = new DocumentFragment()
   bookmarks.docs.forEach(doc => {
     const { fileUrl, id, owner, previewurl, tags, image, time, like, bookmark } = doc.data()
-
     const mediaLi = document.createElement('li')
     mediaLi.classList.add('custom')
 
@@ -309,25 +346,52 @@ buttonShowBookmarks.addEventListener('click', async () => {
     mediaImg.setAttribute('data-like', like)
     mediaImg.setAttribute('data-bookmark', bookmark)
 
+    const tagsTemplateString = tags.split(' ').map((tag, index, array) => {
+      if (index === array.length - 1) {
+        return `<option>${tag}</option> `
+      }
+
+      return `<option>${tag}</option>`
+    }).join(' ')
+
     if (image.includes('.mp4')) {
       mediaImg.classList.add('video-outline')
     }
 
     mediaLi.append(mediaImg)
     documentFragment.append(mediaLi)
+    documentFragment2.append(tagsTemplateString)
   })
 
+  const filteredTags = documentFragment2.textContent.split(' ').filter((tag, index, array) => array.indexOf(tag) === index).sort().join('')
+
+  imageSorter.innerHTML = `<option>none</option>${filteredTags}`
   ulMedia.append(documentFragment)
 })
 
+const state = (() => {
+  let pageId = 0
+
+  return {
+    getPageId: () => pageId,
+    incrementPageId: () => ++pageId,
+    decrementPageId: () => --pageId
+  }
+})()
+
 buttonDecrementPage.addEventListener('click', async () => {
-  if(formFetchMedia.tags.value === '') {
+  const pageId = state.getPageId()
+
+  if (formFetchMedia.tags.value === '') {
     return
   }
 
-  const pageId = Number(displayCurrentPage.textContent) - 1
+  if (pageId === 0) {
+    return
+  }
+
   const tags = formFetchMedia.tags.value.split(' ').join('+')
-  const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52&tags=${tags}&pid=${pageId}`)
+  const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52&tags=${tags}&pid=${state.decrementPageId()}`)
   const fetchedMedia = await response.json()
   const documentFragment = new DocumentFragment()
 
@@ -353,18 +417,17 @@ buttonDecrementPage.addEventListener('click', async () => {
   })
 
   ulMedia.innerHTML = ''
-  displayCurrentPage.textContent = pageId
+  displayCurrentPage.textContent = state.getPageId() + 1
   ulMedia.append(documentFragment)
 })
 
 buttonIncrementPage.addEventListener('click', async () => {
-  if(formFetchMedia.tags.value === '') {
+  if (formFetchMedia.tags.value === '') {
     return
   }
 
-  const pageId = Number(displayCurrentPage.textContent) + 1
   const tags = formFetchMedia.tags.value.split(' ').join('+')
-  const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52&tags=${tags}&pid=${pageId}`)
+  const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52&tags=${tags}&pid=${state.incrementPageId()}`) // 1
   const fetchedMedia = await response.json()
   const documentFragment = new DocumentFragment()
 
@@ -390,8 +453,28 @@ buttonIncrementPage.addEventListener('click', async () => {
   })
 
   ulMedia.innerHTML = ''
-  displayCurrentPage.textContent = pageId
+  displayCurrentPage.textContent = state.getPageId() + 1
   ulMedia.append(documentFragment)
+})
+
+imageSorter.addEventListener('input', e => {
+  const desiredTag = e.target.value
+
+  if (desiredTag === 'none') {
+    const images = [...document.querySelectorAll('[data-tags]')]
+    images.forEach(image => image.parentElement.classList.remove('hide'))
+    return
+  }
+
+  const images = [...document.querySelectorAll('[data-tags]')]
+  const imagesWithDesiredTag = images.filter(image => {
+    if (!image.dataset.tags.includes(desiredTag)) {
+      return image
+    }
+  })
+
+  images.forEach(image => image.parentElement.classList.remove('hide'))
+  imagesWithDesiredTag.forEach(image => image.parentElement.classList.add('hide'))
 })
 
 onAuthStateChanged(auth, user => {
