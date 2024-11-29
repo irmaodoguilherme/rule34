@@ -134,7 +134,8 @@ const fetchMedia = async tagsToBeSearched => {
 const hideMediaFilter = () => filterContainer.classList.add('hide')
 const clearMediaList = () => ulMedia.innerHTML = ''
 const resetPageId = () => displayCurrentPage.textContent = '1'
-const hidePageNavigationButtons = () => pageButtons.classList.remove('hide')
+const showPageNavigationButtons = () => pageButtons.classList.remove('hide')
+const hidePageNavigationButtons = () => pageButtons.classList.add('hide')
 
 const handleFormFetchSubmit = async e => {
   e.preventDefault()
@@ -145,7 +146,7 @@ const handleFormFetchSubmit = async e => {
   hideMediaFilter()
   clearMediaList()
   resetPageId()
-  hidePageNavigationButtons()
+  showPageNavigationButtons()
   renderMediaLis(media)
 }
 
@@ -384,26 +385,20 @@ const logout = async () => {
 }
 
 const showMediaFilter = () => filterContainer.classList.remove('hide')
+const getFilterOptions = tags => tags.split(',').map(tag => {
+  if(tag === '') {
+    return
+  }
 
-const getTagsOptions = tags => tags.split(' ').map((tag, index, array) =>
-  index === array.length - 1 ?
-    `<option>${tag}</option> ` :
-    `<option>${tag}</option>`
-).join(' ')
-
-const getFilterOptions = tags => {
-  const documentFragment = new DocumentFragment()
-  documentFragment.append(getTagsOptions(tags))
-
-  return documentFragment
-}
-
+  return `<option>${tag}</option>`
+})
 const removeDuplicates = array =>
   array.filter((tag, index, array) => array.indexOf(tag) === index)
-const fillFilterOptions = filteredTags =>
+const fillFilter = filteredTags => {
   imageFilter.innerHTML = `<option>none</option>${filteredTags}`
-const getSortedOptions = tags =>
-  removeDuplicates(getFilterOptions(tags).textContent.split(' ')).sort().join('')
+}
+const getSortedOptions = string =>
+  removeDuplicates(getFilterOptions(string)).sort().join(' ')
 
 
 const handleFilterOptions = docs => {
@@ -411,10 +406,13 @@ const handleFilterOptions = docs => {
 
   docs.forEach(doc => {
     const { tags } = doc.data()
-    documentFragment.append(getSortedOptions(tags))
+    documentFragment.append(tags.split(' ').map(tag => `${tag},`).join(''))
   })
 
-  fillFilterOptions(documentFragment.textContent)
+  const sortedOptions = getSortedOptions(documentFragment.textContent)
+  console.log(sortedOptions)
+
+  fillFilter(sortedOptions)
 }
 
 const handleButtonShowLikesClick = async userid => {
