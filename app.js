@@ -4,7 +4,6 @@ import {
 import {
   getFirestore,
   collection,
-  addDoc,
   setDoc,
   deleteDoc,
   updateDoc,
@@ -26,12 +25,12 @@ import {
 
 const ulMedia = document.querySelector('[data-js="media-list"]')
 const mediaPopup = document.querySelector('[data-js="media-popup"]')
-const mediaContainer = document.querySelector('[data-js="media-container"]')
-const formFetchMedia = document.querySelector('[data-js="form-search"]')
-const buttonDownload = document.querySelector('[data-js="download-media"]')
-const buttonLikeMedia = document.querySelector('[data-js="like-media"]')
-const buttonBookmarkMedia = document.querySelector('[data-js="bookmark-media"]')
-const buttonProfile = document.querySelector('[data-button="profile"]')
+const enlargedMediaContainer = document.querySelector('[data-container="enlarged-media"]')
+const formFetchMedia = document.querySelector('[data-form="fetch"]')
+const buttonDownload = document.querySelector('[data-button="download"]')
+const buttonLike = document.querySelector('[data-button="like"]')
+const buttonBookmark = document.querySelector('[data-button="bookmark"]')
+const buttonMenu = document.querySelector('[data-button="menu"]')
 const buttonLogin = document.querySelector('[data-button="login"]')
 const buttonLogout = document.querySelector('[data-button="logout"]')
 const buttonHome = document.querySelector('[data-button="home"]')
@@ -40,13 +39,13 @@ const buttonShowBookmarks = document.querySelector('[data-button="show-bookmarks
 const offcanvas = document.querySelector('[data-js="offcanvas"]')
 const offcanvasPopup = document.querySelector('[data-js="offcanvas-popup"]')
 const buttonShowActivity = document.querySelector('[data-button="show-activity"]')
-const mediaButtons = document.querySelector('[data-js="media-buttons"]')
-const pageButtons = document.querySelector('[data-js="page-buttons"]')
-const buttonDecrementPageId = document.querySelector('[data-button="decrement-page"]')
-const displayCurrentPage = document.querySelector('[data-js="current-page"]')
-const buttonIncrementPageId = document.querySelector('[data-button="increment-page"]')
-const filterContainer = document.querySelector('[data-js="sort-container"]')
-const imageFilter = document.querySelector('[data-js="image-sorter"]')
+const mediaButtonsContainer = document.querySelector('[data-container="media-buttons"]')
+const pageNavigationButtonsContainer = document.querySelector('[data-container="page-navigation-buttons"]')
+const buttonDecrementPage = document.querySelector('[data-button="decrement-page"]')
+const displayCurrentPageId = document.querySelector('[data-js="current-page"]')
+const buttonIncrementPage = document.querySelector('[data-button="increment-page"]')
+const filterContainer = document.querySelector('[data-container="filter"]')
+const mediaFilter = document.querySelector('[data-js="image-filter"]')
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3ibhZluc8MPpS0JtFhhnzsfcdz-0W9a4",
@@ -85,11 +84,12 @@ const getMediaLi = (
   const isMediaAVideo = image.includes('mp4')
 
   const mediaLi = document.createElement('li')
-  mediaLi.classList.add('custom')
+  mediaLi.classList.add('col-sm')
 
   const mediaContainer = document.createElement('img')
   mediaContainer.src = preview_url
-  mediaContainer.classList.add('clickable')
+
+  mediaContainer.setAttribute('class', 'btn p-0 m-0 max-h-100 max-w-90')
   mediaContainer.setAttribute('data-file_url', file_url)
   mediaContainer.setAttribute('data-id', id)
   mediaContainer.setAttribute('data-owner', owner)
@@ -131,11 +131,13 @@ const fetchMedia = async tagsToBeSearched => {
   return await response.json()
 }
 
-const hideMediaFilter = () => filterContainer.classList.add('hide')
+const hideMediaFilter = () => filterContainer.classList.add('d-none')
 const clearMediaList = () => ulMedia.innerHTML = ''
-const resetPageId = () => displayCurrentPage.textContent = '1'
-const showPageNavigationButtons = () => pageButtons.classList.remove('hide')
-const hidePageNavigationButtons = () => pageButtons.classList.add('hide')
+const resetPageId = () => displayCurrentPageId.textContent = '1'
+const showPageNavigationButtons = () =>
+  pageNavigationButtonsContainer.classList.remove('d-none')
+const hidePageNavigationButtons = () =>
+  pageNavigationButtonsContainer.classList.add('d-none')
 
 const handleFormFetchSubmit = async e => {
   e.preventDefault()
@@ -183,11 +185,11 @@ const getMediaEl = (
 
   if (elTag === 'video') {
     mediaEl.setAttribute('controls', '')
-    mediaEl.classList.add('video')
+    mediaEl.classList.add('max-w-100')
     return mediaEl
   }
 
-  mediaEl.classList.add('media')
+  mediaEl.setAttribute('class', 'max-w-100 max-h-100 h-fit')
   return mediaEl
 }
 
@@ -209,10 +211,10 @@ const handleButtonStyling = (button, isConditionTruthy, classToAddOrRemove) => {
 
 const enlargeClickedMedia = (elTag, preview_url, dataMedia) => {
   const mediaEl = getMediaEl(elTag, preview_url, dataMedia)
-  mediaContainer.append(mediaEl)
+  enlargedMediaContainer.append(mediaEl)
 }
 
-const showMediaPopup = () => mediaPopup.classList.remove('hide')
+const showMediaPopup = () => mediaPopup.classList.remove('d-none')
 
 const handleOnMediaClick = async e => {
   const { src: preview_url, dataset: dataMedia } = e.target
@@ -226,8 +228,8 @@ const handleOnMediaClick = async e => {
   const { isMediaLiked, isMediaBookmarked } = await checkClickedMedia(id)
   const elTag = image.includes('.mp4') ? 'video' : 'img'
 
-  handleButtonStyling(buttonLikeMedia, isMediaLiked, 'heart')
-  handleButtonStyling(buttonBookmarkMedia, isMediaBookmarked, 'bookmark')
+  handleButtonStyling(buttonLike, isMediaLiked, 'heart')
+  handleButtonStyling(buttonBookmark, isMediaBookmarked, 'bookmark')
   enlargeClickedMedia(elTag, preview_url, dataMedia)
   showMediaPopup()
 }
@@ -238,7 +240,7 @@ const removeMedia = () => {
   media.remove()
 }
 
-const hideMediaPopup = () => mediaPopup.classList.add('hide')
+const hideMediaPopup = () => mediaPopup.classList.add('d-none')
 
 const handleOnMediaPopupClick = e => {
   const dataClose = e.target.dataset.js
@@ -278,7 +280,7 @@ const dislikeMedia = async mediaRef =>
 
 const isMediaDeletable = async mediaRef => {
   const isButtonBookmarkFilled =
-    buttonBookmarkMedia.classList.contains('bi-bookmark-fill')
+    buttonBookmark.classList.contains('bi-bookmark-fill')
 
   if (!isButtonBookmarkFilled) {
     await deleteDoc(mediaRef)
@@ -291,16 +293,16 @@ const handleButtonLikeMediaClick = async userid => {
   const { id } = dataMedia
   const mediaRef = doc(db, 'media', id)
   const isButtonLikeFilled =
-    buttonLikeMedia.classList.contains('bi-heart-fill')
+    buttonLike.classList.contains('bi-heart-fill')
 
   if (isButtonLikeFilled) {
     dislikeMedia(mediaRef)
-    manipulateClasses('bi-heart-fill', 'bi-heart', buttonLikeMedia)
+    manipulateClasses('bi-heart-fill', 'bi-heart', buttonLike)
     isMediaDeletable(mediaRef)
     return
   }
 
-  manipulateClasses('bi-heart', 'bi-heart-fill', buttonLikeMedia)
+  manipulateClasses('bi-heart', 'bi-heart-fill', buttonLike)
   likeMedia(mediaRef, userid, media.src, dataMedia)
 }
 
@@ -337,16 +339,16 @@ const handleBookmarkMediaClick = async userid => {
   const [{ id }, { src: file_url }] = [dataMedia, media]
   const mediaRef = doc(db, 'media', id)
   const isButtonBookmarkFilled =
-    buttonBookmarkMedia.classList.contains('bi-bookmark-fill')
+    buttonBookmark.classList.contains('bi-bookmark-fill')
 
   if (isButtonBookmarkFilled) {
     unbookmarkMedia(mediaRef)
-    manipulateClasses('bi-bookmark-fill', 'bi-bookmark', buttonBookmarkMedia)
+    manipulateClasses('bi-bookmark-fill', 'bi-bookmark', buttonBookmark)
 
     return
   }
 
-  manipulateClasses('bi-bookmark', 'bi-bookmark-fill', buttonBookmarkMedia)
+  manipulateClasses('bi-bookmark', 'bi-bookmark-fill', buttonBookmark)
   bookmarkMedia(mediaRef, userid, file_url, dataMedia)
 }
 
@@ -359,13 +361,13 @@ const handleOnButtonHomeClick = () => {
 }
 
 const showOffcanvas = () => {
-  offcanvasPopup.classList.remove('hide')
+  offcanvasPopup.classList.remove('d-none')
   setTimeout(() => offcanvas.classList.add('show-offcanvas'), 100)
 }
 
 const hideOffcanvas = () => {
   offcanvas.classList.remove('show-offcanvas')
-  setTimeout(() => offcanvasPopup.classList.add('hide'), 250)
+  setTimeout(() => offcanvasPopup.classList.add('d-none'), 250)
 }
 
 const handleOffcanvasPopupClick = e => {
@@ -384,9 +386,9 @@ const logout = async () => {
   clearMediaList()
 }
 
-const showMediaFilter = () => filterContainer.classList.remove('hide')
+const showMediaFilter = () => filterContainer.classList.remove('d-none')
 const getFilterOptions = tags => tags.split(',').map(tag => {
-  if(tag === '') {
+  if (tag === '') {
     return
   }
 
@@ -395,7 +397,7 @@ const getFilterOptions = tags => tags.split(',').map(tag => {
 const removeDuplicates = array =>
   array.filter((tag, index, array) => array.indexOf(tag) === index)
 const fillFilter = filteredTags => {
-  imageFilter.innerHTML = `<option>none</option>${filteredTags}`
+  mediaFilter.innerHTML = `<option>none</option>${filteredTags}`
 }
 const getSortedOptions = string =>
   removeDuplicates(getFilterOptions(string)).sort().join(' ')
@@ -410,7 +412,6 @@ const handleFilterOptions = docs => {
   })
 
   const sortedOptions = getSortedOptions(documentFragment.textContent)
-  console.log(sortedOptions)
 
   fillFilter(sortedOptions)
 }
@@ -456,7 +457,7 @@ const showBookmarks = async userid => {
 }
 
 const updateCurrentPageId = () =>
-  displayCurrentPage.textContent = state.getPageId() + 1
+  displayCurrentPageId.textContent = state.getPageId() + 1
 const handleButtonIncrementPage = () => fetchNextPage(state.incrementPageId())
 const handleButtonDecrementPage = () => {
   const pageId = state.getPageId()
@@ -491,12 +492,12 @@ const getLisParents = lis => lis.map(li => li.parentElement)
 
 const hideMediaLis = (lis, desiredTag) => {
   const lisParentsToHide = getLisParents(filterMedia(lis, desiredTag, false))
-  manipulateClasses('d-block', 'hide', ...lisParentsToHide)
+  manipulateClasses('d-block', 'd-none', ...lisParentsToHide)
 }
 
 const showMediaLis = (lis, desiredTag) => {
   const lisParentsToShow = getLisParents(filterMedia(lis, desiredTag, true))
-  manipulateClasses('hide', 'd-block', ...lisParentsToShow)
+  manipulateClasses('d-none', 'd-block', ...lisParentsToShow)
 }
 
 const handleMediaDisplay = (mediaLis, inputTag) => {
@@ -505,7 +506,7 @@ const handleMediaDisplay = (mediaLis, inputTag) => {
 }
 
 const showAllLis = mediaLis => mediaLis.forEach(mediaItem =>
-  mediaItem.parentElement.classList.remove('hide'))
+  mediaItem.parentElement.classList.remove('d-none'))
 
 const handleFilterInput = e => {
   const desiredTag = e.target.value
@@ -524,37 +525,37 @@ ulMedia.addEventListener('click', handleOnMediaClick)
 mediaPopup.addEventListener('click', handleOnMediaPopupClick)
 buttonHome.addEventListener('click', handleOnButtonHomeClick)
 offcanvasPopup.addEventListener('click', handleOffcanvasPopupClick)
-buttonIncrementPageId.addEventListener('click', handleButtonIncrementPage)
-buttonDecrementPageId.addEventListener('click', handleButtonDecrementPage)
+buttonIncrementPage.addEventListener('click', handleButtonIncrementPage)
+buttonDecrementPage.addEventListener('click', handleButtonDecrementPage)
 
 onAuthStateChanged(auth, user => {
   if (!user) {
-    buttonLogin.classList.remove('hide')
-    buttonProfile.classList.add('hide')
-    mediaButtons.classList.add('hide')
+    buttonLogin.classList.remove('d-none')
+    buttonMenu.classList.add('d-none')
+    mediaButtonsContainer.classList.add('d-none')
 
     buttonLogin.addEventListener('click', login)
-    imageFilter.removeEventListener('click', handleFilterInput)
-    buttonProfile.removeEventListener('click', showOffcanvas)
+    mediaFilter.removeEventListener('click', handleFilterInput)
+    buttonMenu.removeEventListener('click', showOffcanvas)
     buttonLogout.removeEventListener('click', logout)
-    buttonLikeMedia.onclick = ''
-    buttonBookmarkMedia.onclick = ''
+    buttonLike.onclick = ''
+    buttonBookmark.onclick = ''
     buttonShowLikes.onclick = ''
     buttonShowBookmarks.onclick = ''
     buttonShowActivity.onlick = ''
     return
   }
 
-  buttonLogin.classList.add('hide')
-  buttonProfile.classList.remove('hide')
-  mediaButtons.classList.remove('hide')
+  buttonLogin.classList.add('d-none')
+  buttonMenu.classList.remove('d-none')
+  mediaButtonsContainer.classList.remove('d-none')
 
   buttonLogin.removeEventListener('click', login)
-  imageFilter.addEventListener('input', handleFilterInput)
-  buttonProfile.addEventListener('click', showOffcanvas)
+  mediaFilter.addEventListener('input', handleFilterInput)
+  buttonMenu.addEventListener('click', showOffcanvas)
   buttonLogout.addEventListener('click', logout)
-  buttonLikeMedia.onclick = () => handleButtonLikeMediaClick(user.uid)
-  buttonBookmarkMedia.onclick = () => handleBookmarkMediaClick(user.uid)
+  buttonLike.onclick = () => handleButtonLikeMediaClick(user.uid)
+  buttonBookmark.onclick = () => handleBookmarkMediaClick(user.uid)
   buttonShowLikes.onclick = () => handleButtonShowLikesClick(user.uid)
   buttonShowBookmarks.onclick = () => showBookmarks(user.uid)
   buttonShowActivity.onclick = () => handleButtonShowActivityClick(user.uid)
