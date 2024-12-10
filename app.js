@@ -55,6 +55,7 @@ const firebaseConfig = {
   messagingSenderId: "734770576483",
   appId: "1:734770576483:web:d35b20c502d60a13114c56"
 };
+
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
 const collectionMedia = collection(db, 'media')
@@ -70,6 +71,33 @@ const state = (() => {
     decrementPageId: () => --pageId
   }
 })()
+
+const manipulateClasses = (classToRemove, classToAdd, ...els) => {
+  els.forEach(el => {
+    el.classList.remove(classToRemove)
+    el.classList.add(classToAdd)
+  })
+}
+
+const getFetchUrl = (tagsToBeSearched, pageId = 0) => {
+  const baseUrl =
+    'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52'
+  return `${baseUrl}&tags=${tagsToBeSearched}&pid=${pageId}`
+}
+
+const fetchMedia = async (tagsToBeSearched, pageId = 0) => {
+  const response = await fetch(getFetchUrl(tagsToBeSearched, pageId))
+  return await response.json()
+}
+
+const hideMediaFilter = () => filterContainer.classList.add('d-none')
+const showMediaFilter = () => filterContainer.classList.remove('d-none')
+const clearMediaList = () => ulMedia.innerHTML = ''
+const resetPageId = () => displayCurrentPageId.textContent = '1'
+const showPageNavigationButtons = () =>
+  pageNavigationButtonsContainer.classList.remove('d-none')
+const hidePageNavigationButtons = () =>
+  pageNavigationButtonsContainer.classList.add('d-none')
 
 const getMediaLi = (
   {
@@ -120,36 +148,34 @@ const renderMediaLis = media => {
   ulMedia.append(documentFragment)
 }
 
-const getFetchUrl = (tagsToBeSearched, pageId = 0) => {
-  const baseUrl =
-    'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52'
-  return `${baseUrl}&tags=${tagsToBeSearched}&pid=${pageId}`
+const fillFilter = filteredTags => {
+  mediaFilter.innerHTML = `<option>none</option>${filteredTags}`
 }
 
-const fetchMedia = async tagsToBeSearched => {
-  const response = await fetch(getFetchUrl(tagsToBeSearched))
-  return await response.json()
-}
+const getFilterOptions = tags => tags.split(',').map(tag => {
+  if (tag === '') {
+    return
+  }
 
-const hideMediaFilter = () => filterContainer.classList.add('d-none')
-const clearMediaList = () => ulMedia.innerHTML = ''
-const resetPageId = () => displayCurrentPageId.textContent = '1'
-const showPageNavigationButtons = () =>
-  pageNavigationButtonsContainer.classList.remove('d-none')
-const hidePageNavigationButtons = () =>
-  pageNavigationButtonsContainer.classList.add('d-none')
+  return `<option>${tag}</option>`
+})
 
-const handleFormFetchSubmit = async e => {
-  e.preventDefault()
+const removeDuplicates = array =>
+  array.filter((tag, index, array) => array.indexOf(tag) === index)
+const getSortedOptions = string =>
+  removeDuplicates(getFilterOptions(string)).sort().join(' ')
 
-  const tagsToBeSearched = e.target.tags.value.split(' ').join('+')
-  const media = await fetchMedia(tagsToBeSearched)
+const handleFilterOptions = docs => {
+  const documentFragment = new DocumentFragment()
 
-  hideMediaFilter()
-  clearMediaList()
-  resetPageId()
-  showPageNavigationButtons()
-  renderMediaLis(media)
+  docs.forEach(doc => {
+    const { tags } = doc.data()
+    documentFragment.append(tags.split(' ').map(tag => `${tag},`).join(''))
+  })
+
+  const sortedOptions = getSortedOptions(documentFragment.textContent)
+
+  fillFilter(sortedOptions)
 }
 
 const checkClickedMedia = async id => {
@@ -161,6 +187,15 @@ const checkClickedMedia = async id => {
     mediaSnapshot.exists() ? mediaSnapshot.data() : {}
 
   return { isMediaBookmarked, isMediaLiked }
+}
+
+const handleButtonStyling = (button, isConditionTruthy, classToAddOrRemove) => {
+  if (isConditionTruthy) {
+    manipulateClasses(`bi-${classToAddOrRemove}`, `bi-${classToAddOrRemove}-fill`, button)
+    return
+  }
+
+  manipulateClasses(`bi-${classToAddOrRemove}-fill`, `bi-${classToAddOrRemove}`, button)
 }
 
 const getMediaEl = (
@@ -185,28 +220,12 @@ const getMediaEl = (
 
   if (elTag === 'video') {
     mediaEl.setAttribute('controls', '')
-    mediaEl.classList.add('max-w-100')
+    mediaEl.setAttribute('class', 'max-w-100 h-100 max-h-fit')
     return mediaEl
   }
-
-  mediaEl.setAttribute('class', 'max-w-100 max-h-100 h-fit')
+  
+  mediaEl.setAttribute('class', 'max-w-100 h-100 max-h-fit')
   return mediaEl
-}
-
-const manipulateClasses = (classToRemove, classToAdd, ...els) => {
-  els.forEach(el => {
-    el.classList.remove(classToRemove)
-    el.classList.add(classToAdd)
-  })
-}
-
-const handleButtonStyling = (button, isConditionTruthy, classToAddOrRemove) => {
-  if (isConditionTruthy) {
-    manipulateClasses(`bi-${classToAddOrRemove}`, `bi-${classToAddOrRemove}-fill`, button)
-    return
-  }
-
-  manipulateClasses(`bi-${classToAddOrRemove}-fill`, `bi-${classToAddOrRemove}`, button)
 }
 
 const enlargeClickedMedia = (elTag, preview_url, dataMedia) => {
@@ -215,24 +234,7 @@ const enlargeClickedMedia = (elTag, preview_url, dataMedia) => {
 }
 
 const showMediaPopup = () => mediaPopup.classList.remove('d-none')
-
-const handleOnMediaClick = async e => {
-  const { src: preview_url, dataset: dataMedia } = e.target
-  const { file_url: isClickedElementAMedia } = dataMedia
-
-  if (!isClickedElementAMedia) {
-    return
-  }
-
-  const { id, image } = dataMedia
-  const { isMediaLiked, isMediaBookmarked } = await checkClickedMedia(id)
-  const elTag = image.includes('.mp4') ? 'video' : 'img'
-
-  handleButtonStyling(buttonLike, isMediaLiked, 'heart')
-  handleButtonStyling(buttonBookmark, isMediaBookmarked, 'bookmark')
-  enlargeClickedMedia(elTag, preview_url, dataMedia)
-  showMediaPopup()
-}
+const hideMediaPopup = () => mediaPopup.classList.add('d-none')
 
 const removeMedia = () => {
   const media = document.querySelector('[data-js="media"]')
@@ -240,14 +242,65 @@ const removeMedia = () => {
   media.remove()
 }
 
-const hideMediaPopup = () => mediaPopup.classList.add('d-none')
+const showOffcanvas = () => {
+  offcanvasPopup.classList.remove('d-none')
+  setTimeout(() => offcanvas.classList.add('transform-none'), 100)
+}
 
-const handleOnMediaPopupClick = e => {
-  const dataClose = e.target.dataset.js
+const hideOffcanvas = () => {
+  offcanvas.classList.remove('transform-none')
+  setTimeout(() => offcanvasPopup.classList.add('d-none'), 250)
+}
 
-  if (dataClose === 'close-popup' || dataClose === 'x') {
-    hideMediaPopup()
-    removeMedia()
+const updateCurrentPageId = () =>
+  displayCurrentPageId.textContent = state.getPageId() + 1
+
+const fetchNextPage = async pageId => {
+  if (formFetchMedia.tags.value === '') {
+    return
+  }
+
+  const tags = formFetchMedia.tags.value.split(' ').join('+')
+  const media = await fetchMedia(tags, pageId)
+
+  updateCurrentPageId()
+  clearMediaList()
+  renderMediaLis(media)
+}
+
+const filterMedia = (lis, desiredTag, returnMatchedLi) => lis.filter(li => {
+  const matchedLi = li.dataset.tags.includes(desiredTag)
+  return returnMatchedLi ? matchedLi : !matchedLi
+})
+
+const getLisParents = lis => lis.map(li => li.parentElement)
+const hideMediaLis = (lis, desiredTag) => {
+  const lisParentsToHide = getLisParents(filterMedia(lis, desiredTag, false))
+  manipulateClasses('d-block', 'd-none', ...lisParentsToHide)
+}
+
+const showMediaLis = (lis, desiredTag) => {
+  const lisParentsToShow = getLisParents(filterMedia(lis, desiredTag, true))
+  manipulateClasses('d-none', 'd-block', ...lisParentsToShow)
+}
+
+const showAllLis = mediaLis => mediaLis.forEach(mediaItem =>
+  mediaItem.parentElement.classList.remove('d-none'))
+
+const handleMediaDisplay = (mediaLis, inputTag) => {
+  hideMediaLis(mediaLis, inputTag)
+  showMediaLis(mediaLis, inputTag)
+}
+
+const dislikeMedia = async mediaRef =>
+  await updateDoc(mediaRef, { like: deleteField() })
+
+const isMediaDeletable = async mediaRef => {
+  const isButtonBookmarkFilled =
+    buttonBookmark.classList.contains('bi-bookmark-fill')
+
+  if (!isButtonBookmarkFilled) {
+    await deleteDoc(mediaRef)
   }
 }
 
@@ -273,37 +326,6 @@ const likeMedia = async (
     like: true,
     userid
   }, { merge: true })
-}
-
-const dislikeMedia = async mediaRef =>
-  await updateDoc(mediaRef, { like: deleteField() })
-
-const isMediaDeletable = async mediaRef => {
-  const isButtonBookmarkFilled =
-    buttonBookmark.classList.contains('bi-bookmark-fill')
-
-  if (!isButtonBookmarkFilled) {
-    await deleteDoc(mediaRef)
-  }
-}
-
-const handleButtonLikeMediaClick = async userid => {
-  const media = document.querySelector('[data-js="media"]')
-  const dataMedia = media.dataset
-  const { id } = dataMedia
-  const mediaRef = doc(db, 'media', id)
-  const isButtonLikeFilled =
-    buttonLike.classList.contains('bi-heart-fill')
-
-  if (isButtonLikeFilled) {
-    dislikeMedia(mediaRef)
-    manipulateClasses('bi-heart-fill', 'bi-heart', buttonLike)
-    isMediaDeletable(mediaRef)
-    return
-  }
-
-  manipulateClasses('bi-heart', 'bi-heart-fill', buttonLike)
-  likeMedia(mediaRef, userid, media.src, dataMedia)
 }
 
 const unbookmarkMedia = async mediaRef =>
@@ -333,6 +355,111 @@ const bookmarkMedia = async (
   }, { merge: true })
 }
 
+const handleFormFetchSubmit = async e => {
+  e.preventDefault()
+
+  const tagsToBeSearched = e.target.tags.value.split(' ').join('+')
+  const media = await fetchMedia(tagsToBeSearched)
+
+  hideMediaFilter()
+  clearMediaList()
+  resetPageId()
+  showPageNavigationButtons()
+  renderMediaLis(media)
+}
+
+const handleOnMediaClick = async e => {
+  const { src: preview_url, dataset: dataMedia } = e.target
+  const { file_url: isClickedElementAMedia } = dataMedia
+
+  if (!isClickedElementAMedia) {
+    return
+  }
+
+  const { id, image } = dataMedia
+  const { isMediaLiked, isMediaBookmarked } = await checkClickedMedia(id)
+  const elTag = image.includes('.mp4') ? 'video' : 'img'
+
+  handleButtonStyling(buttonLike, isMediaLiked, 'heart')
+  handleButtonStyling(buttonBookmark, isMediaBookmarked, 'bookmark')
+  enlargeClickedMedia(elTag, preview_url, dataMedia)
+  showMediaPopup()
+}
+
+const handleOnMediaPopupClick = e => {
+  const dataClose = e.target.dataset.js
+
+  if (dataClose === 'close-popup' || dataClose === 'x') {
+    hideMediaPopup()
+    removeMedia()
+  }
+}
+
+const handleOnButtonHomeClick = () => {
+  hideMediaFilter()
+  clearMediaList()
+  hidePageNavigationButtons()
+}
+
+const handleOffcanvasPopupClick = e => {
+  const clickedElement = e.target
+  const dataClickedElement = clickedElement.dataset.js
+
+  if (dataClickedElement != 'offcanvas') {
+    hideOffcanvas()
+  }
+}
+
+const handleButtonIncrementPage = () => fetchNextPage(state.incrementPageId())
+const handleButtonDecrementPage = () => {
+  const pageId = state.getPageId()
+
+  if (pageId <= 0) {
+    return
+  }
+
+  fetchNextPage(state.decrementPageId())
+}
+
+const login = async () => await signInWithPopup(auth, provider)
+const logout = async () => {
+  await signOut(auth)
+  hideOffcanvas()
+  hideMediaFilter()
+  clearMediaList()
+}
+
+const handleFilterInput = e => {
+  const desiredTag = e.target.value
+  const mediaLis = [...document.querySelectorAll('[data-tags]')]
+
+  if (desiredTag === 'none') {
+    showAllLis(mediaLis)
+    return
+  }
+
+  handleMediaDisplay(mediaLis, desiredTag)
+}
+
+const handleButtonLikeMediaClick = async userid => {
+  const media = document.querySelector('[data-js="media"]')
+  const dataMedia = media.dataset
+  const { id } = dataMedia
+  const mediaRef = doc(db, 'media', id)
+  const isButtonLikeFilled =
+    buttonLike.classList.contains('bi-heart-fill')
+
+  if (isButtonLikeFilled) {
+    dislikeMedia(mediaRef)
+    manipulateClasses('bi-heart-fill', 'bi-heart', buttonLike)
+    isMediaDeletable(mediaRef)
+    return
+  }
+
+  manipulateClasses('bi-heart', 'bi-heart-fill', buttonLike)
+  likeMedia(mediaRef, userid, media.src, dataMedia)
+}
+
 const handleBookmarkMediaClick = async userid => {
   const media = document.querySelector('[data-js="media"]')
   const dataMedia = media.dataset
@@ -352,70 +479,6 @@ const handleBookmarkMediaClick = async userid => {
   bookmarkMedia(mediaRef, userid, file_url, dataMedia)
 }
 
-const login = async () => await signInWithPopup(auth, provider)
-
-const handleOnButtonHomeClick = () => {
-  hideMediaFilter()
-  clearMediaList()
-  hidePageNavigationButtons()
-}
-
-const showOffcanvas = () => {
-  offcanvasPopup.classList.remove('d-none')
-  setTimeout(() => offcanvas.classList.add('show-offcanvas'), 100)
-}
-
-const hideOffcanvas = () => {
-  offcanvas.classList.remove('show-offcanvas')
-  setTimeout(() => offcanvasPopup.classList.add('d-none'), 250)
-}
-
-const handleOffcanvasPopupClick = e => {
-  const clickedElement = e.target
-  const dataClickedElement = clickedElement.dataset.js
-
-  if (dataClickedElement != 'offcanvas') {
-    hideOffcanvas()
-  }
-}
-
-const logout = async () => {
-  await signOut(auth)
-  hideOffcanvas()
-  hideMediaFilter()
-  clearMediaList()
-}
-
-const showMediaFilter = () => filterContainer.classList.remove('d-none')
-const getFilterOptions = tags => tags.split(',').map(tag => {
-  if (tag === '') {
-    return
-  }
-
-  return `<option>${tag}</option>`
-})
-const removeDuplicates = array =>
-  array.filter((tag, index, array) => array.indexOf(tag) === index)
-const fillFilter = filteredTags => {
-  mediaFilter.innerHTML = `<option>none</option>${filteredTags}`
-}
-const getSortedOptions = string =>
-  removeDuplicates(getFilterOptions(string)).sort().join(' ')
-
-
-const handleFilterOptions = docs => {
-  const documentFragment = new DocumentFragment()
-
-  docs.forEach(doc => {
-    const { tags } = doc.data()
-    documentFragment.append(tags.split(' ').map(tag => `${tag},`).join(''))
-  })
-
-  const sortedOptions = getSortedOptions(documentFragment.textContent)
-
-  fillFilter(sortedOptions)
-}
-
 const handleButtonShowLikesClick = async userid => {
   const queryLikedMedia =
     query(
@@ -424,6 +487,21 @@ const handleButtonShowLikesClick = async userid => {
       where('userid', '==', userid)
     )
   const { docs } = await getDocs(queryLikedMedia)
+
+  clearMediaList()
+  renderMediaLis(docs)
+  showMediaFilter()
+  handleFilterOptions(docs)
+}
+
+const handleButtonShowBookmarksClick = async userid => {
+  const queryBookmarkedMedia =
+    query(
+      collectionMedia,
+      where('bookmark', '!=', false),
+      where('userid', '==', userid)
+    )
+  const { docs } = await getDocs(queryBookmarkedMedia)
 
   clearMediaList()
   renderMediaLis(docs)
@@ -441,85 +519,6 @@ const handleButtonShowActivityClick = async userid => {
   handleFilterOptions(docs)
 }
 
-const showBookmarks = async userid => {
-  const queryBookmarkedMedia =
-    query(
-      collectionMedia,
-      where('bookmark', '!=', false),
-      where('userid', '==', userid)
-    )
-  const { docs } = await getDocs(queryBookmarkedMedia)
-
-  clearMediaList()
-  renderMediaLis(docs)
-  showMediaFilter()
-  handleFilterOptions(docs)
-}
-
-const updateCurrentPageId = () =>
-  displayCurrentPageId.textContent = state.getPageId() + 1
-const handleButtonIncrementPage = () => fetchNextPage(state.incrementPageId())
-const handleButtonDecrementPage = () => {
-  const pageId = state.getPageId()
-
-  if (pageId === 0) {
-    return
-  }
-
-  fetchNextPage(state.decrementPageId())
-}
-
-const fetchNextPage = async pageId => {
-  if (formFetchMedia.tags.value === '') {
-    return
-  }
-
-  const tags = formFetchMedia.tags.value.split(' ').join('+')
-  const response = await fetch(getFetchUrl(tags, pageId))
-  const media = await response.json()
-
-  updateCurrentPageId()
-  clearMediaList()
-  renderMediaLis(media)
-}
-
-const filterMedia = (lis, desiredTag, returnMatchedLi) => lis.filter(li => {
-  const matchedLi = li.dataset.tags.includes(desiredTag)
-  return returnMatchedLi ? matchedLi : !matchedLi
-})
-
-const getLisParents = lis => lis.map(li => li.parentElement)
-
-const hideMediaLis = (lis, desiredTag) => {
-  const lisParentsToHide = getLisParents(filterMedia(lis, desiredTag, false))
-  manipulateClasses('d-block', 'd-none', ...lisParentsToHide)
-}
-
-const showMediaLis = (lis, desiredTag) => {
-  const lisParentsToShow = getLisParents(filterMedia(lis, desiredTag, true))
-  manipulateClasses('d-none', 'd-block', ...lisParentsToShow)
-}
-
-const handleMediaDisplay = (mediaLis, inputTag) => {
-  hideMediaLis(mediaLis, inputTag)
-  showMediaLis(mediaLis, inputTag)
-}
-
-const showAllLis = mediaLis => mediaLis.forEach(mediaItem =>
-  mediaItem.parentElement.classList.remove('d-none'))
-
-const handleFilterInput = e => {
-  const desiredTag = e.target.value
-  const mediaLis = [...document.querySelectorAll('[data-tags]')]
-
-  if (desiredTag === 'none') {
-    showAllLis(mediaLis)
-    return
-  }
-
-  handleMediaDisplay(mediaLis, desiredTag)
-}
-
 formFetchMedia.addEventListener('submit', handleFormFetchSubmit)
 ulMedia.addEventListener('click', handleOnMediaClick)
 mediaPopup.addEventListener('click', handleOnMediaPopupClick)
@@ -527,6 +526,9 @@ buttonHome.addEventListener('click', handleOnButtonHomeClick)
 offcanvasPopup.addEventListener('click', handleOffcanvasPopupClick)
 buttonIncrementPage.addEventListener('click', handleButtonIncrementPage)
 buttonDecrementPage.addEventListener('click', handleButtonDecrementPage)
+enlargedMediaContainer.addEventListener('click', () => {
+  mediaButtonsContainer.classList.toggle('transform-scaleX-0')
+})
 
 onAuthStateChanged(auth, user => {
   if (!user) {
@@ -557,6 +559,6 @@ onAuthStateChanged(auth, user => {
   buttonLike.onclick = () => handleButtonLikeMediaClick(user.uid)
   buttonBookmark.onclick = () => handleBookmarkMediaClick(user.uid)
   buttonShowLikes.onclick = () => handleButtonShowLikesClick(user.uid)
-  buttonShowBookmarks.onclick = () => showBookmarks(user.uid)
+  buttonShowBookmarks.onclick = () => handleButtonShowBookmarksClick(user.uid)
   buttonShowActivity.onclick = () => handleButtonShowActivityClick(user.uid)
 })

@@ -10,21 +10,19 @@
 </head>
 <body class="h-100 text-white min-h-fit bg-c-black font-sys-ui">
   <div class="d-none position-fixed bg-black bg-opacity-75 inset-0 z-index-1" data-js="media-popup">
-    <div class="d-flex justify-content-center align-items-center h-100">
-      <div class="h-100 max-h-fit d-flex" data-container="enlarged-media">
+    <button class="text-white fs-5 bg-black border-1 border-black bg-opacity-50 btn bi bi-x-lg position-absolute ms-3 mt-3 px-2 pt-1 pb-1 top-0 start-0 z-index-1" data-js="close-popup"></button>
+    <div class="max-h-fit h-100 position-absolute inset-0 flex-column mt-auto mb-auto">
+      <div class="max-h-fit w-100 media-height max-w-fit mx-auto" data-container="enlarged-media">
       </div>
-      <div class="w-100 h-100 mx-auto row row-cols-auto column-gap-4 max-h-fit max-w-fit bg-black bg-opacity-75 px-3 py-2 position-absolute inset-0 mt-auto" data-container="media-buttons">
-        <button class="text-white fs-3 bg-transparent border-0 btn col bi bi-x-lg" data-js="close-popup"></button>
-        <button class="text-white fs-3 bg-transparent border-0 btn col bi bi-heart" data-button="like"></button>
-        <button class="text-white fs-3 bg-transparent border-0 btn col bi bi-bookmark" data-button="bookmark"></button>
-        <a href="" target="_blank" class="text-white fs-3 bg-transparent border-0 btn bi bi-download" data-button="download"></a>
+      <div class="w-100 h-100 mx-auto row row-cols-auto column-gap-5 max-h-fit max-w-fit mt-auto" data-container="media-buttons">
+        <button class="text-white fs-5 bg-transparent border-0 btn col bi bi-heart" data-button="like"></button>
+        <button class="text-white fs-5 bg-transparent border-0 btn col bi bi-bookmark" data-button="bookmark"></button>
+        <a href="" target="_blank" class="text-white fs-5 bg-transparent border-0 btn bi bi-download" data-button="download"></a>
       </div>
     </div>
   </div>
-  </div>
-  </div>
   <div data-js="offcanvas-popup" class="d-none position-fixed bg-black bg-opacity-75 inset-0 z-index-1">
-    <ul data-js="offcanvas" class="h-100 d-grid justify-content-center gap-4 pt-5 hide-offcanvas bg-dark place-content-start max-w-16r">
+    <ul data-js="offcanvas" class="h-100 d-grid justify-content-center gap-4 pt-5 translateX-minus-100 transition-transform-02s bg-dark place-content-start max-w-16r">
       <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="show-likes">
         <i class="bi bi-heart"></i>
         <p>Likes</p>
@@ -42,7 +40,6 @@
         <p>Logout</p>
       </li>
     </ul>
-  </div>
   </div>
   <ul class="d-flex justify-content-center position-sticky w-100 mb-4 top-0 gap-5 gap-4r min-w-20r bg-c-black pb-2">
     <li class="btn d-flex flex-column align-items-center max-w-4-1r min-w-4-1r bg-transparent border-0 btn-dark" data-button="home">
