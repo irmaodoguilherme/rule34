@@ -389,7 +389,7 @@ const handleOnMediaClick = async e => {
 const handleOnMediaPopupClick = e => {
   const dataClose = e.target.dataset.js
 
-  if (dataClose === 'close-popup' || dataClose === 'x') {
+  if (dataClose === 'close-popup' || dataClose === 'media-popup') {
     hideMediaPopup()
     removeMedia()
   }
@@ -526,9 +526,6 @@ buttonHome.addEventListener('click', handleOnButtonHomeClick)
 offcanvasPopup.addEventListener('click', handleOffcanvasPopupClick)
 buttonIncrementPage.addEventListener('click', handleButtonIncrementPage)
 buttonDecrementPage.addEventListener('click', handleButtonDecrementPage)
-enlargedMediaContainer.addEventListener('click', () => {
-  mediaButtonsContainer.classList.toggle('transform-scaleX-0')
-})
 
 onAuthStateChanged(auth, user => {
   if (!user) {
@@ -561,4 +558,14 @@ onAuthStateChanged(auth, user => {
   buttonShowLikes.onclick = () => handleButtonShowLikesClick(user.uid)
   buttonShowBookmarks.onclick = () => handleButtonShowBookmarksClick(user.uid)
   buttonShowActivity.onclick = () => handleButtonShowActivityClick(user.uid)
+})
+
+const request = new XMLHttpRequest()
+request.open('Get', 'https://ac.rule34.xxx/autocomplete.php?q=as')
+request.send()
+
+request.addEventListener('readystatechange', () => {
+  if(request.readyState === 4) {
+    console.log(request.responseText)
+  }
 })
