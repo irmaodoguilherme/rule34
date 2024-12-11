@@ -10,50 +10,50 @@
 </head>
 <body class="h-100 text-white min-h-fit bg-c-black font-sys-ui">
   <div class="d-none position-fixed bg-black bg-opacity-75 inset-0 z-index-1" data-js="media-popup">
-    <div class="landscape-media-container max-h-fit h-100 position-absolute inset-0 mt-auto mb-auto" data-js="close-popup">
-      <div class="max-h-fit w-100 media-height max-w-fit m-inline-auto ma-auto landscape-media" data-container="enlarged-media">
+    <div class="max-h-fit h-100 position-absolute inset-0 mt-auto mb-auto landscape-media-container" data-js="close-popup">
+      <div class="max-h-fit w-100 media-height max-w-fit m-inline-auto" data-container="enlarged-media">
       </div>
-      <div class="w-100 h-100 mx-auto row row-cols-auto column-gap-5 max-h-fit max-w-fit mt-auto mb-auto landscape-media-buttons-container" data-container="media-buttons">
-        <button class="text-white fs-5 btn col bi bi-x-lg" data-js="close-popup"></button>
-        <button class="text-white fs-5 btn col bi bi-heart" data-button="like"></button>
-        <button class="text-white fs-5 btn col bi bi-bookmark" data-button="bookmark"></button>
-        <a href="" target="_blank" class="text-white fs-5 btn bi bi-download" data-button="download"></a>
+      <div class="w-100 h-100 row row-cols-auto column-gap-5 max-h-fit max-w-fit mt-auto mb-auto m-inline-auto-i landscape-media-buttons-container" data-container="media-buttons">
+        <button class="m-0 p-0 text-white fs-5 btn col bi bi-x-lg" data-js="close-popup"></button>
+        <button class="m-0 p-0 text-white fs-5 btn col bi bi-heart" data-button="like"></button>
+        <button class="m-0 p-0 text-white fs-5 btn col bi bi-bookmark" data-button="bookmark"></button>
+        <a href="" target="_blank" class="m-0 p-0 text-white fs-5 btn col bi bi-download" data-button="download"></a>
       </div>
     </div>
   </div>
   <div data-js="offcanvas-popup" class="d-none position-fixed bg-black bg-opacity-75 inset-0 z-index-1">
-    <ul data-js="offcanvas" class="h-100 d-grid justify-content-center gap-4 pt-5 translateX-minus-100 transition-transform-02s bg-dark place-content-start max-w-16r">
+    <ul data-js="offcanvas" class="h-100 d-grid justify-content-center gap-4 pt-5 translateX-minus-100 transition-transform-02s bg-dark place-content-start max-w-16r p-0 m-0">
       <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="show-likes">
-        <i class="bi bi-heart"></i>
-        <p>Likes</p>
+        <i class="p-0 m-0 bi bi-heart"></i>
+        <p class="p-0 m-0">Likes</p>
       </li>
       <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="show-bookmarks">
-        <i class="bi bi-bookmark"></i>
-        <p>Bookmarks</p>
+        <i class="p-0 m-0 bi bi-bookmark"></i>
+        <p class="p-0 m-0">Bookmarks</p>
       </li>
       <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="show-activity">
-        <i class="bi bi-activity"></i>
-        <p>Activity</p>
+        <i class="p-0 m-0 bi bi-activity"></i>
+        <p class="p-0 m-0">Activity</p>
       </li>
       <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="logout">
-        <i class="bi bi-box-arrow-in-right"></i>
-        <p>Logout</p>
+        <i class="p-0 m-0 bi bi-box-arrow-in-right"></i>
+        <p class="p-0 m-0">Logout</p>
       </li>
     </ul>
   </div>
-  <ul class="d-flex justify-content-center position-sticky w-100 mb-4 top-0 gap-5 gap-4r min-w-20r bg-c-black pb-2">
-    <li class="btn d-flex flex-column align-items-center max-w-4-1r min-w-4-1r bg-transparent border-0 btn-dark" data-button="home">
+  <ul class="d-flex justify-content-center position-sticky w-100 mb-4 top-0 gap-5 gap-4r min-w-20r bg-c-black pb-2 p-0 m-0">
+    <li class="btn d-flex flex-column align-items-center max-w-4-1r min-w-4-1r bg-transparent border-0 btn-dark p-0 m-0" data-button="home">
       <i class="fs-2 bi bi-house"></i>
       <p>Home</p>
     </li>
     <form class='d-flex' data-form='fetch'>
       <input class='mt-auto mb-auto w-100 h-100 fs-5 text-white max-w-4-1r bg-transparent max-h-2-1r input-outline max-w-transition-02s rounded-1 border-0' name='tags' placeholder='Search by tags'></input>
     </form>
-    <li class="btn d-flex flex-column align-items-center max-w-4-1r min-w-4-1r d-none bg-transparent border-0 btn-dark" data-button="menu">
+    <li class="btn d-flex flex-column align-items-center max-w-4-1r min-w-4-1r d-none bg-transparent border-0 btn-dark p-0 m-0" data-button="menu">
       <i class="fs-2 bi bi-list"></i>
       <p>Menu</p>
     </li>
-    <li class="btn d-flex flex-column align-items-center max-w-4-1r min-w-4-1r d-none bg-transparent border-0 btn-dark" data-button="login">
+    <li class="btn d-flex flex-column align-items-center max-w-4-1r min-w-4-1r d-none bg-transparent border-0 btn-dark p-0 m-0" data-button="login">
       <i class="fs-2 bi bi-box-arrow-in-right"></i>
       <p>Login</p>
     </li>
@@ -64,8 +64,8 @@
       <select name="" id="" data-js="image-filter"></select>
     </div>
   </div>
-  <div class="container text-center mx-auto">
-    <ul data-js="media-list" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-gap-5 place-items-center"></ul>
+  <div class="container text-center mx-auto p-0 m-0">
+    <ul data-js="media-list" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-gap-5 place-items-center p-0 m-0 pb-5"></ul>
   </div>
   <div class="d-flex mx-auto pb-4 pt-5 gap-3 max-w-fit d-none" data-container="page-navigation-buttons">
     <div class="d-flex flex-row">
