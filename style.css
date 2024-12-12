@@ -176,7 +176,7 @@
   margin-top: auto;
 }
 
-@media (min-height: 1440px) {
+@media (max-width: 576px) and (orientation: landscape) {
   .media-height {
     height: 100%;
     margin-right: 0;
