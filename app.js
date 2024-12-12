@@ -24,7 +24,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
 
 const ulMedia = document.querySelector('[data-js="media-list"]')
-const mediaPopup = document.querySelector('[data-js="media-popup"]')
+const popup = document.querySelector('[data-js="popup"]')
 const enlargedMediaContainer = document.querySelector('[data-container="enlarged-media"]')
 const formFetchMedia = document.querySelector('[data-form="fetch"]')
 const buttonDownload = document.querySelector('[data-button="download"]')
@@ -37,7 +37,6 @@ const buttonHome = document.querySelector('[data-button="home"]')
 const buttonShowLikes = document.querySelector('[data-button="show-likes"]')
 const buttonShowBookmarks = document.querySelector('[data-button="show-bookmarks"]')
 const offcanvas = document.querySelector('[data-js="offcanvas"]')
-const offcanvasPopup = document.querySelector('[data-js="offcanvas-popup"]')
 const buttonShowActivity = document.querySelector('[data-button="show-activity"]')
 const mediaButtonsContainer = document.querySelector('[data-container="media-buttons"]')
 const pageNavigationButtonsContainer = document.querySelector('[data-container="page-navigation-buttons"]')
@@ -223,7 +222,7 @@ const getMediaEl = (
     mediaEl.setAttribute('class', 'max-w-100 h-100 max-h-fit')
     return mediaEl
   }
-  
+
   mediaEl.setAttribute('class', 'max-w-100 h-100 max-h-fit')
   return mediaEl
 }
@@ -233,8 +232,8 @@ const enlargeClickedMedia = (elTag, preview_url, dataMedia) => {
   enlargedMediaContainer.append(mediaEl)
 }
 
-const showMediaPopup = () => mediaPopup.classList.remove('d-none')
-const hideMediaPopup = () => mediaPopup.classList.add('d-none')
+const showPopup = () => popup.classList.remove('d-none')
+const hidePopup = () => popup.classList.add('d-none')
 
 const removeMedia = () => {
   const media = document.querySelector('[data-js="media"]')
@@ -243,13 +242,13 @@ const removeMedia = () => {
 }
 
 const showOffcanvas = () => {
-  offcanvasPopup.classList.remove('d-none')
+  popup.classList.remove('d-none')
   setTimeout(() => offcanvas.classList.add('transform-none'), 100)
 }
 
 const hideOffcanvas = () => {
   offcanvas.classList.remove('transform-none')
-  setTimeout(() => offcanvasPopup.classList.add('d-none'), 250)
+  setTimeout(() => popup.classList.add('d-none'), 250)
 }
 
 const updateCurrentPageId = () =>
@@ -368,6 +367,12 @@ const handleFormFetchSubmit = async e => {
   renderMediaLis(media)
 }
 
+const toggleEnlargedMediaContainerVisibility = () => {
+  const enlargedMediaContainer =
+    document.querySelector('[data-js="enlarged-media-container"]')
+  enlargedMediaContainer.classList.toggle('d-none')
+}
+
 const handleOnMediaClick = async e => {
   const { src: preview_url, dataset: dataMedia } = e.target
   const { file_url: isClickedElementAMedia } = dataMedia
@@ -383,14 +388,22 @@ const handleOnMediaClick = async e => {
   handleButtonStyling(buttonLike, isMediaLiked, 'heart')
   handleButtonStyling(buttonBookmark, isMediaBookmarked, 'bookmark')
   enlargeClickedMedia(elTag, preview_url, dataMedia)
-  showMediaPopup()
+  showPopup()
+  toggleEnlargedMediaContainerVisibility()
 }
 
-const handleOnMediaPopupClick = e => {
+const handleOnPopupClick = e => {
   const dataClose = e.target.dataset.js
+  const isOffcanvasVisible = offcanvas.classList.contains('transform-none')
 
-  if (dataClose === 'close-popup' || dataClose === 'media-popup') {
-    hideMediaPopup()
+  if (dataClose != 'offcanvas' && isOffcanvasVisible) {
+    hideOffcanvas()
+    return
+  }
+
+  if (dataClose === 'close-popup' || dataClose === 'enlarged-media-container') {
+    hidePopup()
+    toggleEnlargedMediaContainerVisibility()
     removeMedia()
   }
 }
@@ -399,15 +412,6 @@ const handleOnButtonHomeClick = () => {
   hideMediaFilter()
   clearMediaList()
   hidePageNavigationButtons()
-}
-
-const handleOffcanvasPopupClick = e => {
-  const clickedElement = e.target
-  const dataClickedElement = clickedElement.dataset.js
-
-  if (dataClickedElement != 'offcanvas') {
-    hideOffcanvas()
-  }
 }
 
 const handleButtonIncrementPage = () => fetchNextPage(state.incrementPageId())
@@ -521,9 +525,8 @@ const handleButtonShowActivityClick = async userid => {
 
 formFetchMedia.addEventListener('submit', handleFormFetchSubmit)
 ulMedia.addEventListener('click', handleOnMediaClick)
-mediaPopup.addEventListener('click', handleOnMediaPopupClick)
+popup.addEventListener('click', handleOnPopupClick)
 buttonHome.addEventListener('click', handleOnButtonHomeClick)
-offcanvasPopup.addEventListener('click', handleOffcanvasPopupClick)
 buttonIncrementPage.addEventListener('click', handleButtonIncrementPage)
 buttonDecrementPage.addEventListener('click', handleButtonDecrementPage)
 
@@ -561,11 +564,11 @@ onAuthStateChanged(auth, user => {
 })
 
 const request = new XMLHttpRequest()
-request.open('Get', 'https://ac.rule34.xxx/autocomplete.php?q=as')
+request.open('Get', 'https://ac.rule34.xxx/autocomplete.php?q=f')
 request.send()
 
 request.addEventListener('readystatechange', () => {
-  if(request.readyState === 4) {
+  if (request.readyState === 4) {
     console.log(request.responseText)
   }
 })
