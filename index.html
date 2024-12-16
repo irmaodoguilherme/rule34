@@ -11,7 +11,10 @@
 <body class="h-100 text-white min-h-fit bg-c-black font-sys-ui">
   <div class="d-none position-fixed bg-black bg-opacity-75 inset-0 z-index-1" data-js="popup">
     <div class="max-h-fit h-100 position-absolute inset-0 mt-auto mb-auto landscape-media-container d-none" data-js="enlarged-media-container">
-      <div class="max-h-fit media-height max-w-fit m-inline-auto" data-container="enlarged-media">
+      <div class="max-h-fit media-height max-w-fit m-inline-auto d-flex flex-row align-items-center">
+        <button class="bi bi-caret-left text-white fs-1 bg-transparent border-0 btn p-0 m-0" data-button="previous-media"></button>
+        <div class="max-h-fit max-w-fit h-100 w-100" data-container="enlarged-media"></div>
+        <button class="bi bi-caret-right text-white fs-1 bg-transparent border-0 btn p-0 m-0" data-button="next-media"></button>
       </div>
       <div class="w-100 h-100 row row-cols-auto column-gap-5 max-h-fit max-w-fit mt-auto mb-auto m-inline-auto-i landscape-media-buttons-container" data-container="media-buttons">
         <button class="m-0 p-0 text-white fs-5 btn col bi bi-x-lg" data-js="close-popup"></button>

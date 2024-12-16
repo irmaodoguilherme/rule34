@@ -25,7 +25,9 @@ import {
 
 const ulMedia = document.querySelector('[data-js="media-list"]')
 const popup = document.querySelector('[data-js="popup"]')
-const enlargedMediaContainer = document.querySelector('[data-container="enlarged-media"]')
+const enlargedMedia = document.querySelector('[data-container="enlarged-media"]')
+const buttonNextMedia = document.querySelector('[data-button="next-media"]')
+const buttonPreviousMedia = document.querySelector('[data-button="previous-media"]')
 const formFetchMedia = document.querySelector('[data-form="fetch"]')
 const buttonDownload = document.querySelector('[data-button="download"]')
 const buttonLike = document.querySelector('[data-button="like"]')
@@ -63,11 +65,36 @@ const auth = getAuth(app)
 
 const state = (() => {
   let pageId = 0
+  let mediaQuantity
+  let currentMediaId = 0
 
   return {
     getPageId: () => pageId,
     incrementPageId: () => ++pageId,
-    decrementPageId: () => --pageId
+    decrementPageId: () => --pageId,
+    getCurrentMediaId: () => currentMediaId,
+    getMediaQuantity: () => mediaQuantity,
+    updateMediaQuantity: newMediaQuantity => {
+      if (typeof (mediaQuantity) != 'number') {
+        return
+      }
+
+      mediaQuantity = newMediaQuantity
+    },
+    incrementCurrentMediaId: () => {
+      if (currentMediaId === mediaQuantity) {
+        return
+      }
+
+      return ++currentMediaId
+    },
+    decrementCurrentMediaId: () => {
+      if (currentMediaId === 0) {
+        return
+      }
+
+      return --currentMediaId
+    }
   }
 })()
 
@@ -99,6 +126,7 @@ const hidePageNavigationButtons = () =>
   pageNavigationButtonsContainer.classList.add('d-none')
 
 const getMediaLi = (
+  mediaId,
   {
     preview_url,
     file_url,
@@ -122,6 +150,7 @@ const getMediaLi = (
   mediaContainer.setAttribute('data-owner', owner)
   mediaContainer.setAttribute('data-tags', tags)
   mediaContainer.setAttribute('data-image', image)
+  mediaContainer.setAttribute('data-mediaId', mediaId)
 
   if (time) {
     mediaContainer.setAttribute('data-time', time)
@@ -137,11 +166,13 @@ const getMediaLi = (
 
 const renderMediaLis = media => {
   const documentFragment = new DocumentFragment()
+  state.updateMediaQuantity(media.length)
 
   media.forEach(mediaItem => {
-    documentFragment.append(getMediaLi(mediaItem.data ?
+    documentFragment.append(getMediaLi(state.getCurrentMediaId(), mediaItem.data ?
       mediaItem.data() :
       mediaItem))
+    state.incrementCurrentMediaId()
   })
 
   ulMedia.append(documentFragment)
@@ -197,6 +228,35 @@ const handleButtonStyling = (button, isConditionTruthy, classToAddOrRemove) => {
   manipulateClasses(`bi-${classToAddOrRemove}-fill`, `bi-${classToAddOrRemove}`, button)
 }
 
+// const getMediaEl = (
+//   elTag,
+//   preview_url,
+//   {
+//     file_url,
+//     id,
+//     owner,
+//     tags,
+//     image
+//   }) => {
+//   const mediaEl = document.createElement(elTag)
+//   mediaEl.src = file_url
+//   mediaEl.setAttribute('data-js', 'media')
+//   mediaEl.setAttribute('data-preview_url', preview_url)
+//   mediaEl.setAttribute('data-id', id)
+//   mediaEl.setAttribute('data-owner', owner)
+//   mediaEl.setAttribute('data-tags', tags)
+//   mediaEl.setAttribute('data-image', image)
+//   buttonDownload.href = file_url
+
+//   if (elTag === 'video') {
+//     mediaEl.setAttribute('controls', '')
+//     mediaEl.setAttribute('class', 'max-w-100 h-100 max-h-fit')
+//     return mediaEl
+//   }
+
+//   mediaEl.setAttribute('class', 'max-w-100 h-100 max-h-fit')
+//   return mediaEl
+// }
 const getMediaEl = (
   elTag,
   preview_url,
@@ -205,7 +265,8 @@ const getMediaEl = (
     id,
     owner,
     tags,
-    image
+    image,
+    mediaid
   }) => {
   const mediaEl = document.createElement(elTag)
   mediaEl.src = file_url
@@ -215,6 +276,7 @@ const getMediaEl = (
   mediaEl.setAttribute('data-owner', owner)
   mediaEl.setAttribute('data-tags', tags)
   mediaEl.setAttribute('data-image', image)
+  mediaEl.setAttribute('data-mediaid', mediaid)
   buttonDownload.href = file_url
 
   if (elTag === 'video') {
@@ -229,7 +291,7 @@ const getMediaEl = (
 
 const enlargeClickedMedia = (elTag, preview_url, dataMedia) => {
   const mediaEl = getMediaEl(elTag, preview_url, dataMedia)
-  enlargedMediaContainer.append(mediaEl)
+  enlargedMedia.append(mediaEl)
 }
 
 const showPopup = () => popup.classList.remove('d-none')
@@ -529,6 +591,38 @@ popup.addEventListener('click', handleOnPopupClick)
 buttonHome.addEventListener('click', handleOnButtonHomeClick)
 buttonIncrementPage.addEventListener('click', handleButtonIncrementPage)
 buttonDecrementPage.addEventListener('click', handleButtonDecrementPage)
+buttonNextMedia.addEventListener('click', () => {
+  const activeMedia = document.querySelector('[data-js="media"]')
+  const nextMediaId = Number(activeMedia.dataset.mediaid) + 1
+
+  if (nextMediaId === state.getMediaQuantity()) {
+    return
+  }
+
+  const nextMediaToBeDisplayed = document.querySelector(`[data-mediaid="${nextMediaId}"]`)
+  const { src: preview_url, dataset } = nextMediaToBeDisplayed
+  const { image } = dataset
+  const elTag = image.includes('.mp4') ? 'video' : 'img'
+  
+  removeMedia()
+  enlargeClickedMedia(elTag, preview_url, dataset)
+})
+buttonPreviousMedia.addEventListener('click', () => {
+  const activeMedia = document.querySelector('[data-js="media"]')
+  const nextMediaId = Number(activeMedia.dataset.mediaid) - 1
+
+  if (nextMediaId <= 0) {
+    return
+  }
+
+  const nextMediaToBeDisplayed = document.querySelector(`[data-mediaid="${nextMediaId}"]`)
+  const { src: preview_url, dataset } = nextMediaToBeDisplayed
+  const { image } = dataset
+  const elTag = image.includes('.mp4') ? 'video' : 'img'
+  
+  removeMedia()
+  enlargeClickedMedia(elTag, preview_url, dataset)
+})
 
 onAuthStateChanged(auth, user => {
   if (!user) {
