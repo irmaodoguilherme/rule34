@@ -28,6 +28,7 @@ const popup = document.querySelector('[data-js="popup"]')
 const enlargedMedia = document.querySelector('[data-container="enlarged-media"]')
 const buttonNextMedia = document.querySelector('[data-button="next-media"]')
 const buttonPreviousMedia = document.querySelector('[data-button="previous-media"]')
+const tagsList = document.querySelector('[data-ul="tags"]')
 const formFetchMedia = document.querySelector('[data-form="fetch"]')
 const buttonDownload = document.querySelector('[data-button="download"]')
 const buttonLike = document.querySelector('[data-button="like"]')
@@ -94,6 +95,13 @@ const state = (() => {
       }
 
       return --currentMediaId
+    },
+    updateCurrentMediaId: newCurrentId => {
+      if (typeof (newCurrentId) != 'number') {
+        return
+      }
+
+      currentMediaId = newCurrentId
     }
   }
 })()
@@ -209,12 +217,10 @@ const handleFilterOptions = docs => {
 }
 
 const checkClickedMedia = async id => {
-  const mediaRef = doc(db, 'media', id)
-  const mediaSnapshot = await getDoc(mediaRef)
-
+  const [mediaRef] = databaseMedia.getMedia().filter(media => media.id === id)
   /* Deixei dessa forma pois parece o mais simples no momento para mim. */
   const { bookmark: isMediaBookmarked = false, like: isMediaLiked = false } =
-    mediaSnapshot.exists() ? mediaSnapshot.data() : {}
+    mediaRef || {}
 
   return { isMediaBookmarked, isMediaLiked }
 }
@@ -324,6 +330,7 @@ const fetchNextPage = async pageId => {
   const tags = formFetchMedia.tags.value.split(' ').join('+')
   const media = await fetchMedia(tags, pageId)
 
+  state.updateCurrentMediaId(0)
   updateCurrentPageId()
   clearMediaList()
   renderMediaLis(media)
@@ -422,6 +429,7 @@ const handleFormFetchSubmit = async e => {
   const tagsToBeSearched = e.target.tags.value.split(' ').join('+')
   const media = await fetchMedia(tagsToBeSearched)
 
+  state.updateCurrentMediaId(0)
   hideMediaFilter()
   clearMediaList()
   resetPageId()
@@ -585,13 +593,59 @@ const handleButtonShowActivityClick = async userid => {
   handleFilterOptions(docs)
 }
 
+const databaseMedia = (() => {
+  let media
+
+  return {
+    getMedia: () => media,
+    updateMedia: newMediaObj => {
+      if (typeof (newMediaObj) != 'object') {
+        return
+      }
+
+      media = newMediaObj
+      return media
+    }
+  }
+})()
+
+const fetchDatabaseMedia = async userid => {
+  const queryBookmarkedMedia =
+    query(collectionMedia, where('userid', '==', userid))
+  const { docs } = await getDocs(queryBookmarkedMedia)
+  const media = docs.map(doc => doc.data())
+
+  databaseMedia.updateMedia(media)
+}
+
 formFetchMedia.addEventListener('submit', handleFormFetchSubmit)
+// formFetchMedia.addEventListener('input', async e => {
+//   const response = await fetch(`https://ac.rule34.xxx/autocomplete.php?q=${e.target.value}`)
+//   const tagsList = await response.json()
+//   const documentFragment = new DocumentFragment()
+//   const tagsListEl = document.querySelector('[data-ul="tags"]')
+
+//   tagsList.forEach(({ label, value }) => {
+//     const tagLabel = document.createElement('label')
+//     tagLabel.textContent = label
+//     tagLabel.setAttribute('value', value)
+//     tagLabel.setAttribute('class', 'btn p-0 m-0 border-0 text-white')
+
+//     documentFragment.append(tagLabel)
+//   })
+
+//   tagsListEl.innerHTML = ''
+//   tagsListEl.append(documentFragment)
+// })
+// tagsList.addEventListener('click', e => {
+//   console.log(e.target.value)
+// })
 ulMedia.addEventListener('click', handleOnMediaClick)
 popup.addEventListener('click', handleOnPopupClick)
 buttonHome.addEventListener('click', handleOnButtonHomeClick)
 buttonIncrementPage.addEventListener('click', handleButtonIncrementPage)
 buttonDecrementPage.addEventListener('click', handleButtonDecrementPage)
-buttonNextMedia.addEventListener('click', () => {
+buttonNextMedia.addEventListener('click', async () => {
   const activeMedia = document.querySelector('[data-js="media"]')
   const nextMediaId = Number(activeMedia.dataset.mediaid) + 1
 
@@ -601,10 +655,13 @@ buttonNextMedia.addEventListener('click', () => {
 
   const nextMediaToBeDisplayed = document.querySelector(`[data-mediaid="${nextMediaId}"]`)
   const { src: preview_url, dataset } = nextMediaToBeDisplayed
-  const { image } = dataset
+  const { id, image } = dataset
+  const { isMediaLiked, isMediaBookmarked } = await checkClickedMedia(id)
   const elTag = image.includes('.mp4') ? 'video' : 'img'
-  
+
   removeMedia()
+  handleButtonStyling(buttonLike, isMediaLiked, 'heart')
+  handleButtonStyling(buttonBookmark, isMediaBookmarked, 'bookmark')
   enlargeClickedMedia(elTag, preview_url, dataset)
 })
 buttonPreviousMedia.addEventListener('click', () => {
@@ -619,7 +676,7 @@ buttonPreviousMedia.addEventListener('click', () => {
   const { src: preview_url, dataset } = nextMediaToBeDisplayed
   const { image } = dataset
   const elTag = image.includes('.mp4') ? 'video' : 'img'
-  
+
   removeMedia()
   enlargeClickedMedia(elTag, preview_url, dataset)
 })
@@ -645,6 +702,7 @@ onAuthStateChanged(auth, user => {
   buttonLogin.classList.add('d-none')
   buttonMenu.classList.remove('d-none')
   mediaButtonsContainer.classList.remove('d-none')
+  fetchDatabaseMedia(user.uid)
 
   buttonLogin.removeEventListener('click', login)
   mediaFilter.addEventListener('input', handleFilterInput)
@@ -655,14 +713,4 @@ onAuthStateChanged(auth, user => {
   buttonShowLikes.onclick = () => handleButtonShowLikesClick(user.uid)
   buttonShowBookmarks.onclick = () => handleButtonShowBookmarksClick(user.uid)
   buttonShowActivity.onclick = () => handleButtonShowActivityClick(user.uid)
-})
-
-const request = new XMLHttpRequest()
-request.open('Get', 'https://ac.rule34.xxx/autocomplete.php?q=f')
-request.send()
-
-request.addEventListener('readystatechange', () => {
-  if (request.readyState === 4) {
-    console.log(request.responseText)
-  }
 })
