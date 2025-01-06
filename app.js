@@ -42,12 +42,16 @@ const buttonShowBookmarks = document.querySelector('[data-button="show-bookmarks
 const offcanvas = document.querySelector('[data-js="offcanvas"]')
 const buttonShowActivity = document.querySelector('[data-button="show-activity"]')
 const mediaButtonsContainer = document.querySelector('[data-container="media-buttons"]')
-const pageNavigationButtonsContainer = document.querySelector('[data-container="page-navigation-buttons"]')
+const pageNavigationButtonsContainer =
+  document.querySelector('[data-container="page-navigation-buttons"]')
 const buttonDecrementPage = document.querySelector('[data-button="decrement-page"]')
 const displayCurrentPageId = document.querySelector('[data-js="current-page"]')
 const buttonIncrementPage = document.querySelector('[data-button="increment-page"]')
 const filterContainer = document.querySelector('[data-container="filter"]')
 const mediaFilter = document.querySelector('[data-js="image-filter"]')
+const enlargedMediaContainer =
+  document.querySelector('[data-js="enlarged-media-container"]')
+const buttonClosePopup = document.querySelector('[data-js="close-popup"]')
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3ibhZluc8MPpS0JtFhhnzsfcdz-0W9a4",
@@ -106,6 +110,9 @@ const state = (() => {
   }
 })()
 
+const hideButtonClosePopup = () => buttonClosePopup.classList.add('d-none')
+const showButtonClosePopup = () => buttonClosePopup.classList.remove('d-none')
+
 const manipulateClasses = (classToRemove, classToAdd, ...els) => {
   els.forEach(el => {
     el.classList.remove(classToRemove)
@@ -152,7 +159,7 @@ const getMediaLi = (
   const mediaContainer = document.createElement('img')
   mediaContainer.src = preview_url
 
-  mediaContainer.setAttribute('class', 'btn p-0 m-0 max-h-100 max-w-90')
+  mediaContainer.setAttribute('class', 'btn p-0 m-0 max-h-100 max-w-90 media-frame border-0')
   mediaContainer.setAttribute('data-file_url', file_url)
   mediaContainer.setAttribute('data-id', id)
   mediaContainer.setAttribute('data-owner', owner)
@@ -161,7 +168,7 @@ const getMediaLi = (
   mediaContainer.setAttribute('data-mediaId', mediaId)
 
   if (time) {
-    mediaContainer.setAttribute('data-time', time)
+    mediaContainer.setAttribute('data-time', time.toDate())
   }
 
   if (isMediaAVideo) {
@@ -173,16 +180,21 @@ const getMediaLi = (
 }
 
 const renderMediaLis = media => {
-  const documentFragment = new DocumentFragment()
+  const unorderedLIs = []
   state.updateMediaQuantity(media.length)
 
   media.forEach(mediaItem => {
-    documentFragment.append(getMediaLi(state.getCurrentMediaId(), mediaItem.data ?
+    unorderedLIs.push(getMediaLi(state.getCurrentMediaId(), mediaItem.data ?
       mediaItem.data() :
       mediaItem))
     state.incrementCurrentMediaId()
   })
 
+  const orderedLis = [...unorderedLIs].sort((a, b) =>
+    Date.parse(b.firstChild.dataset.time) - Date.parse(a.firstChild.dataset.time))
+  const documentFragment = new DocumentFragment()
+  
+  orderedLis.forEach(li => documentFragment.append(li))
   ulMedia.append(documentFragment)
 }
 
@@ -297,7 +309,7 @@ const getMediaEl = (
 
 const enlargeClickedMedia = (elTag, preview_url, dataMedia) => {
   const mediaEl = getMediaEl(elTag, preview_url, dataMedia)
-  enlargedMedia.append(mediaEl)
+  enlargedMedia.insertAdjacentElement('afterbegin', mediaEl)
 }
 
 const showPopup = () => popup.classList.remove('d-none')
@@ -335,6 +347,10 @@ const fetchNextPage = async pageId => {
   clearMediaList()
   renderMediaLis(media)
 }
+
+// const sortMedia = () => {
+//   ulMedia
+// }
 
 const filterMedia = (lis, desiredTag, returnMatchedLi) => lis.filter(li => {
   const matchedLi = li.dataset.tags.includes(desiredTag)
@@ -438,8 +454,6 @@ const handleFormFetchSubmit = async e => {
 }
 
 const toggleEnlargedMediaContainerVisibility = () => {
-  const enlargedMediaContainer =
-    document.querySelector('[data-js="enlarged-media-container"]')
   enlargedMediaContainer.classList.toggle('d-none')
 }
 
@@ -460,21 +474,25 @@ const handleOnMediaClick = async e => {
   enlargeClickedMedia(elTag, preview_url, dataMedia)
   showPopup()
   toggleEnlargedMediaContainerVisibility()
+  showButtonClosePopup()
 }
 
 const handleOnPopupClick = e => {
   const dataClose = e.target.dataset.js
   const isOffcanvasVisible = offcanvas.classList.contains('transform-none')
+  const selectedDataToClosePopup = ['close-popup', 'popup', 'enlarged-media-container']
 
   if (dataClose != 'offcanvas' && isOffcanvasVisible) {
     hideOffcanvas()
     return
   }
 
-  if (dataClose === 'close-popup' || dataClose === 'enlarged-media-container') {
+  if (selectedDataToClosePopup.includes(dataClose)) {
     hidePopup()
+    hideButtonClosePopup()
     toggleEnlargedMediaContainerVisibility()
     removeMedia()
+    hideMediaButtons()
   }
 }
 
@@ -561,7 +579,7 @@ const handleButtonShowLikesClick = async userid => {
       where('userid', '==', userid)
     )
   const { docs } = await getDocs(queryLikedMedia)
-
+  
   clearMediaList()
   renderMediaLis(docs)
   showMediaFilter()
@@ -653,7 +671,8 @@ buttonNextMedia.addEventListener('click', async () => {
     return
   }
 
-  const nextMediaToBeDisplayed = document.querySelector(`[data-mediaid="${nextMediaId}"]`)
+  const nextMediaToBeDisplayed =
+    document.querySelector(`[data-mediaid="${nextMediaId}"]`)
   const { src: preview_url, dataset } = nextMediaToBeDisplayed
   const { id, image } = dataset
   const { isMediaLiked, isMediaBookmarked } = await checkClickedMedia(id)
@@ -668,11 +687,12 @@ buttonPreviousMedia.addEventListener('click', () => {
   const activeMedia = document.querySelector('[data-js="media"]')
   const nextMediaId = Number(activeMedia.dataset.mediaid) - 1
 
-  if (nextMediaId <= 0) {
+  if (nextMediaId < 0) {
     return
   }
 
-  const nextMediaToBeDisplayed = document.querySelector(`[data-mediaid="${nextMediaId}"]`)
+  const nextMediaToBeDisplayed =
+    document.querySelector(`[data-mediaid="${nextMediaId}"]`)
   const { src: preview_url, dataset } = nextMediaToBeDisplayed
   const { image } = dataset
   const elTag = image.includes('.mp4') ? 'video' : 'img'
@@ -680,6 +700,34 @@ buttonPreviousMedia.addEventListener('click', () => {
   removeMedia()
   enlargeClickedMedia(elTag, preview_url, dataset)
 })
+
+const idleTimer = (() => {
+  const idleTime = 3000
+  let idleTimeout
+
+  return {
+    resetIdleTimer: () => {
+      clearTimeout(idleTimeout)
+      idleTimeout = setTimeout(hideMediaButtons, idleTime)
+    }
+  }
+})()
+
+const hideMediaButtons = () => {
+  [...mediaButtonsContainer.children].forEach(mediaButton => mediaButton.classList.add('d-none'))
+}
+
+const showMediaButtons = () => {
+  if(!buttonLike.classList.contains('d-none')) {
+    idleTimer.resetIdleTimer()
+    return
+  }
+
+  [...mediaButtonsContainer.children].forEach(mediaButton => mediaButton.classList.remove('d-none'))
+  idleTimer.resetIdleTimer()
+}
+
+enlargedMediaContainer.addEventListener('mousemove', showMediaButtons)
 
 onAuthStateChanged(auth, user => {
   if (!user) {
