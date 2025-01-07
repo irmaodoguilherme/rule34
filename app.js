@@ -734,7 +734,7 @@ onAuthStateChanged(auth, user => {
     doc.docChanges().forEach(docChange => {
       if(docChange.type === 'modified') {
         databaseMedia.addMedia(docChange.doc.data())
-        // console.log(docChange, docChange.doc.data(), databaseMedia.getMedia())
+        /// console.log(docChange, docChange.doc.data(), databaseMedia.getMedia())
       }
     })
 
