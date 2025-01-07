@@ -1,26 +1,85 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-
+<html lang="pt-br" class="h-100">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="./style.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-  <title>Rule34</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <title>New Rule34</title>
 </head>
-
-<body class="bg-dark">
-  <div data-js="image-popup" style="background-color: rgb(0 0 0 / 0.9); position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;" class="d-none">
-    <div data-js="image-container" style="position: relative; max-width: 90%; height: 100%; max-height: fit-content;">
-      <button data-js="button-close-popup" style="position: absolute; top: 1rem; right: 1rem;">X</button>
+<body class="h-100 text-white min-h-fit bg-c-black font-sys-ui">
+  <div class="d-none position-fixed bg-black bg-opacity-75 inset-0 z-index-1" data-js="popup">
+    <button class="m-0 p-0 text-white fs-5 btn col bi bi-x-lg position-absolute top-0 start-0 ps-3 pt-3 border-0 z-index-1 d-none" data-js="close-popup"></button>
+    <div class="max-h-fit h-100 position-absolute inset-0 mt-auto mb-auto landscape-media-container d-none" data-js="enlarged-media-container">
+      <div class="max-h-fit h-100 max-w-fit m-inline-auto d-flex flex-row align-items-center">
+        <button class="bi bi-caret-left text-white fs-1 bg-transparent border-0 btn p-0 m-0" data-button="previous-media"></button>
+        <div class="max-h-fit max-w-fit h-100 w-100 position-relative" data-container="enlarged-media">
+          <div class="w-100 h-100 row row-cols-auto column-gap-5 max-h-fit m-inline-auto-i landscape-media-buttons-container position-absolute inset-0 mt-auto bg-black bg-opacity-75 justify-content-center" data-container="media-buttons">
+            <button class="d-none m-0 p-0 text-white fs-5 btn col bi bi-heart" data-button="like"></button>
+            <button class="d-none m-0 p-0 text-white fs-5 btn col bi bi-bookmark" data-button="bookmark"></button>
+            <a href="" target="_blank" class="d-none m-0 p-0 text-white fs-5 btn col bi bi-download" data-button="download"></a>
+          </div>
+        </div>
+        <button class="bi bi-caret-right text-white fs-1 bg-transparent border-0 btn p-0 m-0" data-button="next-media"></button>
+      </div>
+    </div>
+    <ul data-js="offcanvas" class="h-100 d-grid justify-content-center gap-4 pt-5 translateX-minus-100 transition-transform-02s bg-dark place-content-start max-w-16r p-0 m-0">
+      <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="show-likes">
+        <i class="p-0 m-0 bi bi-heart"></i>
+        <p class="p-0 m-0">Likes</p>
+      </li>
+      <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="show-bookmarks">
+        <i class="p-0 m-0 bi bi-bookmark"></i>
+        <p class="p-0 m-0">Bookmarks</p>
+      </li>
+      <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="show-activity">
+        <i class="p-0 m-0 bi bi-activity"></i>
+        <p class="p-0 m-0">Activity</p>
+      </li>
+      <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="logout">
+        <i class="p-0 m-0 bi bi-box-arrow-in-right"></i>
+        <p class="p-0 m-0">Logout</p>
+      </li>
+    </ul>
+  </div>
+  <ul class="d-flex justify-content-center position-sticky w-100 mb-4 top-0 gap-5 gap-4r min-w-20r bg-c-black pb-2 p-0 m-0">
+    <li class="btn d-flex flex-column align-items-center max-w-4-1r min-w-4-1r bg-transparent border-0 btn-dark p-0 m-0" data-button="home">
+      <i class="fs-2 bi bi-house"></i>
+      <p>Home</p>
+    </li>
+    <form class='d-flex' data-form='fetch'>
+      <input class='mt-auto mb-auto w-100 h-100 fs-5 text-white max-w-4-1r bg-transparent max-h-2-1r input-outline max-w-transition-02s rounded-1 border-0 search-tags' name='tags' placeholder='Search by tags'></input>
+    </form>
+    <!-- <ul class="tags-list position-absolute bg-dark text-white p-0 m-0 border border-secondary rounded-1 px-2 d-flex flex-column" data-ul="tags"></ul> -->
+    <li class="btn d-flex flex-column align-items-center max-w-4-1r min-w-4-1r d-none bg-transparent border-0 btn-dark p-0 m-0" data-button="menu">
+      <i class="fs-2 bi bi-list"></i>
+      <p>Menu</p>
+    </li>
+    <li class="btn d-flex flex-column align-items-center max-w-4-1r min-w-4-1r d-none bg-transparent border-0 btn-dark p-0 m-0" data-button="login">
+      <i class="fs-2 bi bi-box-arrow-in-right"></i>
+      <p>Login</p>
+    </li>
+  </ul>
+  <div class="d-grid place-content-center mb-4 d-none" data-container="filter">
+    <div class="d-flex gap-1 fs-6">
+      <label for="">Filter by:</label>
+      <select name="" id="" data-js="image-filter"></select>
     </div>
   </div>
-  <form data-js="form-search-by-tags" class="center-element m-4">
-    <input type="text" name="tags" placeholder="search by tags" style="color: #000000">
-  </form>
-  <ul data-js="media" class="d-flex flex-row gap-3 flex-wrap align-items-center p-0"></ul>
-  <script src="./app.js"></script>
+  <div class="container text-center mx-auto p-0 m-0">
+    <ul data-js="media-list" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-gap-5 place-items-center p-0 m-0 pb-5"></ul>
+  </div>
+  <div class="d-flex mx-auto pb-4 pt-5 gap-3 max-w-fit d-none" data-container="page-navigation-buttons">
+    <div class="d-flex flex-row">
+      <button class="bi bi-caret-left d-grid place-content-center bg-transparent text-white btn fs-4" data-button="decrement-page"></button>
+      <p data-js="current-page" class="text-white fs-3">1</p>
+      <button class="bi bi-caret-right d-grid place-content-center bg-transparent text-white btn fs-4" data-button="increment-page"></button>
+    </div>
+    <form class="max-h-fit">
+      <input type="text" class="border-0 d-grid place-content-center text-white bg-transparent fs-5 border-bottom border-0 max-w-3r">
+    </form>
+  </div>
+  <script type="module" src="./app.js"></script>
 </body>
-
 </html>

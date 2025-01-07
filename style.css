@@ -1,23 +1,214 @@
+@font-face {
+  font-family: Roboto;
+  src: url('./fonts/Roboto-Regular.ttf') format('truetype');
+}
+
 * {
   margin: 0%;
   padding: 0%;
   box-sizing: border-box;
+  font-family: Roboto;
 }
 
-.test {
-  flex: 1 1 20%;
+*::marker {
+  content: '' !important;
 }
 
-.videoBorder {
-  cursor: pointer;
-  border: solid 1px #00c7ff
+.place-items-center {
+  place-items: center !important;
 }
 
-.center-element {
-  display: grid;
-  place-items: center;
+.max-h-100 {
+  max-height: 100% !important;
 }
 
-.m-4 {
-  margin: 4% !important;
+.h-fit {
+  height: fit-content !important;
+}
+
+.max-w-90 {
+  max-width: 90% !important;
+}
+
+.min-h-fit {
+  min-height: fit-content !important;
+}
+
+.max-w-18r {
+  max-width: 18rem !important;
+}
+
+.max-w-100 {
+  max-width: 100% !important;
+}
+
+.font-sys-ui {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important;
+}
+
+.inset-0 {
+  inset: 0 !important;
+}
+
+.popup-background {
+  background-color: rgb(0 0 0 / 0.9) !important;
+}
+
+.z-index-1 {
+  z-index: 1 !important;
+}
+
+.media-buttons-background {
+  background-color: rgb(23 23 23 / 0.8) !important;
+}
+
+.max-h-fit {
+  max-height: fit-content !important;
+}
+
+.max-w-fit {
+  max-width: fit-content !important;
+}
+
+.max-w-16r {
+  max-width: 16rem !important;
+}
+
+.transform-none {
+  transform: none !important;
+}
+
+.translateY-plus-100 {
+  transform: translateY(100%);
+}
+
+.translateX-minus-100 {
+  transform: translateX(-100%);
+}
+
+.transition-transform-02s {
+  transition: transform .2s ease-in-out !important;
+}
+
+.place-content-start {
+  place-content: start !important;
+}
+
+.place-content-center {
+  place-content: center !important;
+}
+
+.gap-10px {
+  gap: 10px !important;
+}
+
+.w-min {
+  width: min-content !important;
+}
+
+.bg-transition-02s {
+  transition: background-color .2s ease-in-out !important;
+}
+
+.gap-4r {
+  gap: 4rem !important;
+}
+
+.min-w-20r {
+  min-width: 20rem !important;
+}
+
+.bg-nav-bar {
+  background-color: rgb(39 39 39) !important;
+}
+
+.max-w-4-1r {
+  max-width: 4.1rem !important;
+}
+
+.min-w-4-1r {
+  min-width: 4.1rem !important;
+}
+
+.max-h-2-1r {
+  max-height: 2.1rem !important;
+}
+
+.input-outline {
+  outline: 1px solid #ffffff !important;
+}
+
+.max-w-transition-02s {
+  transition: max-width .2s ease-in-out !important;
+}
+
+.pb-6 {
+  padding-bottom: 2rem !important;
+}
+
+.max-w-3r {
+  max-width: 3rem !important;
+}
+
+.video-outline {
+  outline: 2px solid rgb(0 100 255) !important;
+}
+
+.bg-c-black {
+  background-color: rgb(19 21 22) !important;
+}
+
+.offcanvas-button {
+  transition: background-color .2s ease-in-out !important;
+}
+
+.offcanvas-button:hover {
+  background-color: rgb(46 46 46) !important;
+}
+
+.media-height {
+  height: calc(100% - 30px);
+}
+
+.m-inline-auto {
+  margin-inline: auto;
+}
+
+.m-inline-auto-i {
+  margin-inline: auto !important;
+}
+
+.c-mt-auto {
+  margin-top: auto;
+}
+
+.tags-list {
+  top: 3.7rem;
+  opacity: 0;
+  transition: opacity .2s ease-in-out;
+  pointer-events: none;
+}
+
+form:focus-within + .tags-list {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (max-width: 576px) and (orientation: landscape) {
+  .media-height {
+    height: 100%;
+    margin-right: 0;
+  }
+
+  .landscape-media-container {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .landscape-media-buttons-container {
+    display: flex;
+    flex-direction: column-reverse;
+    margin-left: 0 !important;
+    gap: 3rem !important;
+  }
 }
