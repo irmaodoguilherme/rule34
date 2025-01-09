@@ -13,7 +13,6 @@
     <button class="m-0 p-0 text-white fs-5 btn col bi bi-x-lg position-absolute top-0 start-0 ps-3 pt-3 border-0 z-index-1 d-none" data-js="close-popup"></button>
     <div class="max-h-fit h-100 position-absolute inset-0 mt-auto mb-auto landscape-media-container d-none" data-js="enlarged-media-container">
       <div class="max-h-fit h-100 max-w-fit m-inline-auto d-flex flex-row align-items-center">
-        <button class="bi bi-caret-left text-white fs-1 bg-transparent border-0 btn p-0 m-0" data-button="previous-media"></button>
         <div class="max-h-fit max-w-fit h-100 w-100 position-relative" data-container="enlarged-media">
           <div class="w-100 h-100 row row-cols-auto column-gap-5 max-h-fit m-inline-auto-i landscape-media-buttons-container position-absolute inset-0 mt-auto bg-black bg-opacity-75 justify-content-center" data-container="media-buttons">
             <button class="d-none m-0 p-0 text-white fs-5 btn col bi bi-heart" data-button="like"></button>
@@ -21,7 +20,10 @@
             <a href="" target="_blank" class="d-none m-0 p-0 text-white fs-5 btn col bi bi-download" data-button="download"></a>
           </div>
         </div>
-        <button class="bi bi-caret-right text-white fs-1 bg-transparent border-0 btn p-0 m-0" data-button="next-media"></button>
+        <div class="d-flex flex-column position-absolute end-0 gap-5 me-4">
+          <button class="bi bi-caret-right text-white fs-1 caret-font bg-black bg-opacity-75 border-0 btn p-0 m-0 rounded-1" data-button="next-media"></button>
+          <button class="bi bi-caret-left text-white fs-1 caret-font bg-black bg-opacity-75 border-0 rounded-1 btn p-0 m-0" data-button="previous-media"></button>
+        </div>
       </div>
     </div>
     <ul data-js="offcanvas" class="h-100 d-grid justify-content-center gap-4 pt-5 translateX-minus-100 transition-transform-02s bg-dark place-content-start max-w-16r p-0 m-0">

@@ -66,6 +66,14 @@
   max-height: fit-content !important;
 }
 
+.caret-font {
+  font-size: 2.4rem !important;
+}
+
+.w-fit {
+  width: fit-content !important;
+}
+
 .max-w-fit {
   max-width: fit-content !important;
 }

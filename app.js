@@ -583,12 +583,12 @@ const handleButtonShowLikesClick = () => {
 
 const handleButtonShowBookmarksClick = ()=> {
   const bookmarkedMedia = getBookmarkedMedia(databaseMedia.getMedia())
-  const orderedbookmarkedMedia = sortByTime(bookmarkedMedia)
+  const orderedBookmarkedMedia = sortByTime(bookmarkedMedia).splice(0, 52)
 
   clearMediaList()
-  renderMediaLis(orderedbookmarkedMedia)
+  renderMediaLis(orderedBookmarkedMedia)
   showMediaFilter()
-  handleFilterOptions(orderedbookmarkedMedia)
+  handleFilterOptions(orderedBookmarkedMedia)
 }
 
 const handleButtonShowActivityClick = () => {
