@@ -1,0 +1,1 @@
+const ulMedia = document.querySelector('[data-js="media-list"]');

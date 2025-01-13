@@ -72,16 +72,11 @@
   <div class="container text-center mx-auto p-0 m-0">
     <ul data-js="media-list" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-gap-5 place-items-center p-0 m-0 pb-5"></ul>
   </div>
-  <div class="d-flex mx-auto pb-4 pt-5 gap-3 max-w-fit d-none" data-container="page-navigation-buttons">
-    <div class="d-flex flex-row">
-      <button class="bi bi-caret-left d-grid place-content-center bg-transparent text-white btn fs-4" data-button="decrement-page"></button>
-      <p data-js="current-page" class="text-white fs-3">1</p>
-      <button class="bi bi-caret-right d-grid place-content-center bg-transparent text-white btn fs-4" data-button="increment-page"></button>
+  <div class="d-flex mx-auto pb-4 pt-5 max-w-fit d-none" data-container="page-navigation-buttons">
+    <div data-js="available-pages" class="d-flex flex-row gap-4" style="overflow: overlay; width: 7rem;">
     </div>
-    <form class="max-h-fit">
-      <input type="text" class="border-0 d-grid place-content-center text-white bg-transparent fs-5 border-bottom border-0 max-w-3r">
-    </form>
   </div>
   <script type="module" src="./app.js"></script>
+  <script src="test.js"></script>
 </body>
 </html>

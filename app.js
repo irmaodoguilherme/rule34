@@ -45,9 +45,9 @@ const buttonShowActivity = document.querySelector('[data-button="show-activity"]
 const mediaButtonsContainer = document.querySelector('[data-container="media-buttons"]')
 const pageNavigationButtonsContainer =
   document.querySelector('[data-container="page-navigation-buttons"]')
-const buttonDecrementPage = document.querySelector('[data-button="decrement-page"]')
+// const buttonDecrementPage = document.querySelector('[data-button="decrement-page"]')
 const displayCurrentPageId = document.querySelector('[data-js="current-page"]')
-const buttonIncrementPage = document.querySelector('[data-button="increment-page"]')
+// const buttonIncrementPage = document.querySelector('[data-button="increment-page"]')
 const filterContainer = document.querySelector('[data-container="filter"]')
 const mediaFilter = document.querySelector('[data-js="image-filter"]')
 const enlargedMediaContainer =
@@ -70,14 +70,11 @@ const provider = new GoogleAuthProvider()
 const auth = getAuth(app)
 
 const state = (() => {
-  let pageId = 0
   let mediaQuantity
   let currentMediaId = 0
+  let currentPageId = 1
 
   return {
-    getPageId: () => pageId,
-    incrementPageId: () => ++pageId,
-    decrementPageId: () => --pageId,
     getCurrentMediaId: () => currentMediaId,
     getMediaQuantity: () => mediaQuantity,
     updateMediaQuantity: newMediaQuantity => {
@@ -107,6 +104,16 @@ const state = (() => {
       }
 
       currentMediaId = newCurrentId
+    },
+    getCurrentPageId: () => currentPageId,
+    incrementPageId: () => ++currentPageId,
+    decrementPageId: () => --currentPageId,
+    updateCurrentPageId: newCurrentPageId => {
+      if (typeof (newCurrentPageId) != 'number') {
+        return
+      }
+
+      currentPageId = newCurrentPageId
     }
   }
 })()
@@ -448,7 +455,7 @@ const handleFormFetchSubmit = async e => {
   state.updateCurrentMediaId(0)
   hideMediaFilter()
   clearMediaList()
-  resetPageId()
+  // resetPageId()
   showPageNavigationButtons()
   renderMediaLis(media)
 }
@@ -581,15 +588,88 @@ const handleButtonShowLikesClick = () => {
   handleFilterOptions(orderedLikedMedia)
 }
 
+const x = (firstNumber, secondNumber, arr) => arr.slice((0 + firstNumber), (52 + secondNumber))
+
 const handleButtonShowBookmarksClick = ()=> {
+  state.updateCurrentMediaId(0)
+
   const bookmarkedMedia = getBookmarkedMedia(databaseMedia.getMedia())
-  const orderedBookmarkedMedia = sortByTime(bookmarkedMedia)
+  const orderedBookmarkedMedia = x(state.getCurrentMediaId(), null, sortByTime(bookmarkedMedia))
 
   clearMediaList()
-  renderMediaLis(orderedBookmarkedMedia)
+  renderMediaLis(orderedBookmarkedMedia, true)
   showMediaFilter()
   handleFilterOptions(orderedBookmarkedMedia)
+
+  /* Daqui para baixo ajusta a quantidade de páginas disponiveis */
+  const availablePagesContainer = document.querySelector('[data-js="available-pages"]')
+  const pagesQuantity = Math.round(bookmarkedMedia.length / 52)
+  const pages = new DocumentFragment()
+
+  for(let i = 0; i < pagesQuantity; i++) {
+    const page = document.createElement('p')
+    page.setAttribute('class', 'btn border-0 text-white fs-3 m-0 p-0')
+    page.setAttribute('data-pageid', i+1)
+    page.textContent = i + 1
+
+    if (i === 0) {
+      page.classList.add('ms-4')
+      page.setAttribute('data-js', 'current-page')
+      pages.append(page)
+    }
+    
+    if(i === pagesQuantity - 1) {
+      page.classList.add('me-4')
+      pages.append(page)
+    }
+
+    pages.append(page)
+  }
+
+  pageNavigationButtonsContainer.classList.remove('d-none')
+  availablePagesContainer.innerHTML = ''
+  availablePagesContainer.append(pages)
 }
+
+const y = (firstNumber, arr) => arr.slice((firstNumber - 52), firstNumber)
+
+document.querySelector('[data-js="available-pages"]').addEventListener('click', e => {
+  const { target } = e
+  const pageId = Number(target.textContent)
+
+  if(pageId < 1){
+    return
+  }
+
+  /* Obtêm o id do último item da lista */
+  if(pageId === (state.getCurrentPageId() + 1)){
+    const bookmarkedMedia = getBookmarkedMedia(databaseMedia.getMedia())
+    const orderedBookmarkedMedia = x(Number([...ulMedia.children][[...ulMedia.children].length - 1].children[0].dataset.mediaid) + 1, Number([...ulMedia.children][[...ulMedia.children].length - 1].children[0].dataset.mediaid) + 1, sortByTime(bookmarkedMedia))
+
+    state.incrementPageId()
+    clearMediaList()
+    renderMediaLis(orderedBookmarkedMedia, true)
+    showMediaFilter()
+    handleFilterOptions(orderedBookmarkedMedia)
+    return
+  }
+
+  /* Precisa melhorar
+  Obtêm o id do primeiro item  */
+  if(pageId === (state.getCurrentPageId() - 1)){
+    state.updateCurrentMediaId((Number(ulMedia.children[0].children[0].dataset.mediaid) - 52))
+
+    const bookmarkedMedia = getBookmarkedMedia(databaseMedia.getMedia())
+    const orderedBookmarkedMedia = y(Number(ulMedia.children[0].children[0].dataset.mediaid), sortByTime(bookmarkedMedia))
+
+    state.decrementPageId()
+    clearMediaList()
+    renderMediaLis(orderedBookmarkedMedia)
+    showMediaFilter()
+    handleFilterOptions(orderedBookmarkedMedia)
+    return
+  }
+})
 
 const handleButtonShowActivityClick = () => {
   const media = databaseMedia.getMedia()
@@ -662,8 +742,8 @@ formFetchMedia.addEventListener('submit', handleFormFetchSubmit)
 ulMedia.addEventListener('click', handleOnMediaClick)
 popup.addEventListener('click', handleOnPopupClick)
 buttonHome.addEventListener('click', handleOnButtonHomeClick)
-buttonIncrementPage.addEventListener('click', handleButtonIncrementPage)
-buttonDecrementPage.addEventListener('click', handleButtonDecrementPage)
+// buttonIncrementPage.addEventListener('click', handleButtonIncrementPage)
+// buttonDecrementPage.addEventListener('click', handleButtonDecrementPage)
 buttonNextMedia.addEventListener('click', async () => {
   const activeMedia = document.querySelector('[data-js="media"]')
   const nextMediaId = Number(activeMedia.dataset.mediaid) + 1
