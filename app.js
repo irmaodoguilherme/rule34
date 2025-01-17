@@ -118,6 +118,29 @@ const state = (() => {
   }
 })()
 
+const databaseMedia = (() => {
+  let media
+
+  return {
+    getMedia: () => media,
+    updateMedia: async newMediaObj => {
+      if (typeof (newMediaObj) != 'object') {
+        return
+      }
+
+      media = newMediaObj
+      return media
+    },
+    addMedia: newMedia => {
+      if (typeof (newMedia) != 'object') {
+        return
+      }
+
+      media.push(newMedia)
+    }
+  }
+})()
+
 const hideButtonClosePopup = () => buttonClosePopup.classList.add('d-none')
 const showButtonClosePopup = () => buttonClosePopup.classList.remove('d-none')
 
@@ -130,13 +153,17 @@ const manipulateClasses = (classToRemove, classToAdd, ...els) => {
 
 const getFetchUrl = (tagsToBeSearched, pageId = 0) => {
   const baseUrl =
-    'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=52'
+    'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=1000'
   return `${baseUrl}&tags=${tagsToBeSearched}&pid=${pageId}`
 }
 
 const fetchMedia = async (tagsToBeSearched, pageId = 0) => {
-  const response = await fetch(getFetchUrl(tagsToBeSearched, pageId))
-  return await response.json()
+  try {
+    const response = await fetch(getFetchUrl(tagsToBeSearched, pageId))
+    return databaseMedia.updateMedia(await response.json())
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 const hideMediaFilter = () => filterContainer.classList.add('d-none')
@@ -189,7 +216,13 @@ const getMediaLi = (
 
 const getLikedMedia = media => media.filter(mediaItem => mediaItem.like === true)
 const getBookmarkedMedia = media => media.filter(mediaItem => mediaItem.bookmark === true)
-const sortByTime = arr => arr.sort((a, b) => b.time.toDate() - a.time.toDate())
+const sortByTime = arr => {
+  if(!arr[0].time) {
+    return arr
+  }
+
+  return arr.sort((a, b) => b.time.toDate() - a.time.toDate())
+}
 const getSortedByTimeMedia = media =>
   sortByTime(media.map(mediaItem => mediaItem.data()))
 
@@ -450,14 +483,44 @@ const handleFormFetchSubmit = async e => {
   e.preventDefault()
 
   const tagsToBeSearched = e.target.tags.value.split(' ').join('+')
-  const media = await fetchMedia(tagsToBeSearched)
+  const media = (await fetchMedia(tagsToBeSearched)).slice(0, 52)
 
   state.updateCurrentMediaId(0)
   hideMediaFilter()
   clearMediaList()
-  // resetPageId()
   showPageNavigationButtons()
   renderMediaLis(media)
+
+  /* Daqui para baixo ajusta a quantidade de páginas disponiveis */
+  const availablePagesContainer = document.querySelector('[data-js="available-pages"]')
+  const databasedMedia = databaseMedia.getMedia()
+  const pagesQuantity = Math.round(databasedMedia.length / 52)
+  const pages = new DocumentFragment()
+
+  for(let i = 0; i < pagesQuantity; i++) {
+    const page = document.createElement('p')
+    page.setAttribute('class', 'btn border-0 text-white fs-3 m-0 p-0')
+    page.setAttribute('data-pageid', i+1)
+    page.textContent = i + 1
+
+    if (i === 0) {
+      page.classList.add('ms-4')
+      page.setAttribute('data-js', 'current-page')
+      pages.append(page)
+    }
+    
+    if(i === pagesQuantity - 1) {
+      page.classList.add('me-4')
+      pages.append(page)
+    }
+
+    pages.append(page)
+  }
+
+  pageNavigationButtonsContainer.classList.remove('d-none')
+  availablePagesContainer.innerHTML = ''
+  availablePagesContainer.append(pages)
+  availablePagesContainer.setAttribute('data-filter', '')
 }
 
 const toggleEnlargedMediaContainerVisibility = () => {
@@ -578,28 +641,65 @@ const handleBookmarkMediaClick = async userid => {
   bookmarkMedia(mediaRef, userid, file_url, dataMedia)
 }
 
-const handleButtonShowLikesClick = () => {
-  const likedMedia = getLikedMedia(databaseMedia.getMedia())
-  const orderedLikedMedia = sortByTime(likedMedia)
-
-  clearMediaList()
-  renderMediaLis(orderedLikedMedia)
-  showMediaFilter()
-  handleFilterOptions(orderedLikedMedia)
-}
-
 const x = (firstNumber, secondNumber, arr) => arr.slice((0 + firstNumber), (52 + secondNumber))
 
-const handleButtonShowBookmarksClick = ()=> {
+const handleButtonShowLikesClick = async userid => {
+  const databasedMedia = await fetchDatabaseMedia(userid)
+  const likedMedia = getLikedMedia(databasedMedia)
+  const sortedLikedMedia = x(0, 0, sortByTime(likedMedia))
+
+  state.updateCurrentMediaId(0)
+  clearMediaList()
+  renderMediaLis(sortedLikedMedia)
+  showMediaFilter()
+  handleFilterOptions(sortedLikedMedia)
+
+  /* Daqui para baixo ajusta a quantidade de páginas disponiveis */
+  const availablePagesContainer = document.querySelector('[data-js="available-pages"]')
+  const pagesQuantity = Math.round(likedMedia.length / 52)
+  const pages = new DocumentFragment()
+
+  for(let i = 0; i < pagesQuantity; i++) {
+    const page = document.createElement('p')
+    page.setAttribute('class', 'btn border-0 text-white fs-3 m-0 p-0')
+    page.setAttribute('data-pageid', i+1)
+    page.textContent = i + 1
+
+    if (i === 0) {
+      page.classList.add('ms-4')
+      page.setAttribute('data-js', 'current-page')
+      pages.append(page)
+    }
+    
+    if(i === pagesQuantity - 1) {
+      page.classList.add('me-4')
+      pages.append(page)
+    }
+
+    pages.append(page)
+  }
+
+  pageNavigationButtonsContainer.classList.remove('d-none')
+  availablePagesContainer.innerHTML = ''
+  availablePagesContainer.append(pages)
+  availablePagesContainer.setAttribute('data-filter', 'like')
+}
+
+const handleButtonShowBookmarksClick = async userid => {
   state.updateCurrentMediaId(0)
 
-  const bookmarkedMedia = getBookmarkedMedia(databaseMedia.getMedia())
-  const orderedBookmarkedMedia = x(state.getCurrentMediaId(), null, sortByTime(bookmarkedMedia))
+  const databasedMedia = await fetchDatabaseMedia(userid)
+  const bookmarkedMedia = getBookmarkedMedia(databasedMedia)
+  const sortedBookmarkedMedia = x(0, 0, sortByTime(bookmarkedMedia))
 
+  /* Limpa a ulMedia */
   clearMediaList()
-  renderMediaLis(orderedBookmarkedMedia, true)
+  /* Renderiza as lis */
+  renderMediaLis(sortedBookmarkedMedia)
+  /* Exibe as opções de filtro */
   showMediaFilter()
-  handleFilterOptions(orderedBookmarkedMedia)
+  /* Renderiza as opções de filtro */
+  handleFilterOptions(sortedBookmarkedMedia)
 
   /* Daqui para baixo ajusta a quantidade de páginas disponiveis */
   const availablePagesContainer = document.querySelector('[data-js="available-pages"]')
@@ -629,6 +729,7 @@ const handleButtonShowBookmarksClick = ()=> {
   pageNavigationButtonsContainer.classList.remove('d-none')
   availablePagesContainer.innerHTML = ''
   availablePagesContainer.append(pages)
+  availablePagesContainer.setAttribute('data-filter', 'bookmark')
 }
 
 const y = (firstNumber, arr) => arr.slice((firstNumber - 52), firstNumber)
@@ -641,16 +742,22 @@ document.querySelector('[data-js="available-pages"]').addEventListener('click', 
     return
   }
 
+  const availablePagesContainer = document.querySelector('[data-js="available-pages"]')
+  const databasedMedia = databaseMedia.getMedia()
+
   /* Obtêm o id do último item da lista */
   if(pageId === (state.getCurrentPageId() + 1)){
-    const bookmarkedMedia = getBookmarkedMedia(databaseMedia.getMedia())
-    const orderedBookmarkedMedia = x(Number([...ulMedia.children][[...ulMedia.children].length - 1].children[0].dataset.mediaid) + 1, Number([...ulMedia.children][[...ulMedia.children].length - 1].children[0].dataset.mediaid) + 1, sortByTime(bookmarkedMedia))
+    const filterAttribute = availablePagesContainer.dataset.filter
+    const filteredDatabasedMedia = databasedMedia.filter(media => media[filterAttribute])
+    // const bookmarkedMedia = getBookmarkedMedia(databaseMedia.getMedia())
+    const orderedDatabasedMedia = x(Number([...ulMedia.children][[...ulMedia.children].length - 1].children[0].dataset.mediaid) + 1, Number([...ulMedia.children][[...ulMedia.children].length - 1].children[0].dataset.mediaid) + 1, sortByTime(filterAttribute != 'bookmark' && filterAttribute != 'like' ? databasedMedia : filteredDatabasedMedia))
+    // const orderedDatabasedMedia = x(Number([...ulMedia.children][[...ulMedia.children].length - 1].children[0].dataset.mediaid) + 1, Number([...ulMedia.children][[...ulMedia.children].length - 1].children[0].dataset.mediaid) + 1, sortByTime(databasedMedia))
 
     state.incrementPageId()
     clearMediaList()
-    renderMediaLis(orderedBookmarkedMedia, true)
+    renderMediaLis(orderedDatabasedMedia)
     showMediaFilter()
-    handleFilterOptions(orderedBookmarkedMedia)
+    handleFilterOptions(orderedDatabasedMedia)
     return
   }
 
@@ -659,14 +766,18 @@ document.querySelector('[data-js="available-pages"]').addEventListener('click', 
   if(pageId === (state.getCurrentPageId() - 1)){
     state.updateCurrentMediaId((Number(ulMedia.children[0].children[0].dataset.mediaid) - 52))
 
-    const bookmarkedMedia = getBookmarkedMedia(databaseMedia.getMedia())
-    const orderedBookmarkedMedia = y(Number(ulMedia.children[0].children[0].dataset.mediaid), sortByTime(bookmarkedMedia))
+    const filterAttribute = availablePagesContainer.dataset.filter
+    const filteredDatabasedMedia = databasedMedia.filter(media => media[filterAttribute])
+
+    // const bookmarkedMedia = getBookmarkedMedia(databaseMedia.getMedia())
+    const orderedDatabasedMedia = y(Number(ulMedia.children[0].children[0].dataset.mediaid), sortByTime(filterAttribute != 'bookmark' && filterAttribute != 'like' ? databasedMedia : filteredDatabasedMedia))
+    // const orderedBookmarkedMedia = y(Number(ulMedia.children[0].children[0].dataset.mediaid), sortByTime(bookmarkedMedia))
 
     state.decrementPageId()
     clearMediaList()
-    renderMediaLis(orderedBookmarkedMedia)
+    renderMediaLis(orderedDatabasedMedia)
     showMediaFilter()
-    handleFilterOptions(orderedBookmarkedMedia)
+    handleFilterOptions(orderedDatabasedMedia)
     return
   }
 })
@@ -681,35 +792,12 @@ const handleButtonShowActivityClick = () => {
   handleFilterOptions(orderedMedia)
 }
 
-const databaseMedia = (() => {
-  let media
-
-  return {
-    getMedia: () => media,
-    updateMedia: newMediaObj => {
-      if (typeof (newMediaObj) != 'object') {
-        return
-      }
-
-      media = newMediaObj
-      return media
-    },
-    addMedia: newMedia => {
-      if (typeof (newMedia) != 'object') {
-        return
-      }
-
-      media.push(newMedia)
-    }
-  }
-})()
-
 const fetchDatabaseMedia = async userid => {
   const queryPrivateMedia = query(collectionMedia, where('userid', '==', userid))
   const { docs } = await getDocs(queryPrivateMedia)
   const media = docs.map(doc => doc.data())
 
-  databaseMedia.updateMedia(media)
+  return databaseMedia.updateMedia(media)
 }
 
 const idleTimer = (() => {
@@ -809,23 +897,23 @@ onAuthStateChanged(auth, user => {
     return
   }
   
-  const queryPrivateMedia = query(collectionMedia, where('userid', '==', user.uid))
-  unsubscribe = onSnapshot(queryPrivateMedia, doc => {
-    doc.docChanges().forEach(docChange => {
-      if(docChange.type === 'modified') {
-        databaseMedia.addMedia(docChange.doc.data())
-        //// console.log(docChange, docChange.doc.data(), databaseMedia.getMedia())
-      }
-    })
+  // const queryPrivateMedia = query(collectionMedia, where('userid', '==', user.uid))
+  // unsubscribe = onSnapshot(queryPrivateMedia, doc => {
+  //   doc.docChanges().forEach(docChange => {
+  //     if(docChange.type === 'modified') {
+  //       databaseMedia.addMedia(docChange.doc.data())
+  //       //// console.log(docChange, docChange.doc.data(), databaseMedia.getMedia())
+  //     }
+  //   })
 
-    const media = doc.docChanges().map(docChange => docChange.doc.data())
-    databaseMedia.updateMedia(media)
-  })
+  //   const media = doc.docChanges().map(docChange => docChange.doc.data())
+  //   databaseMedia.updateMedia(media)
+  // })
 
   buttonLogin.classList.add('d-none')
   buttonMenu.classList.remove('d-none')
   mediaButtonsContainer.classList.remove('d-none')
-  fetchDatabaseMedia(user.uid)
+  // fetchDatabaseMedia(user.uid)
   
   buttonLogin.removeEventListener('click', login)
   mediaFilter.addEventListener('input', handleFilterInput)

@@ -26,17 +26,17 @@
         </div>
       </div>
     </div>
-    <ul data-js="offcanvas" class="h-100 d-grid justify-content-center gap-4 pt-5 translateX-minus-100 transition-transform-02s bg-dark place-content-start max-w-16r p-0 m-0">
+    <ul data-js="offcanvas" class="h-100 d-grid justify-content-center gap-4 pt-5 translateX-minus-100 transition-transform-02s bg-c-black place-content-start max-w-16r p-0 m-0">
       <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="show-likes">
-        <i class="p-0 m-0 bi bi-heart"></i>
+        <i class="p-0 m-0 bi bi-heart text-danger"></i>
         <p class="p-0 m-0">Likes</p>
       </li>
       <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="show-bookmarks">
-        <i class="p-0 m-0 bi bi-bookmark"></i>
+        <i class="p-0 m-0 bi bi-bookmark text-info"></i>
         <p class="p-0 m-0">Bookmarks</p>
       </li>
       <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="show-activity">
-        <i class="p-0 m-0 bi bi-activity"></i>
+        <i class="p-0 m-0 bi bi-activity text-success"></i>
         <p class="p-0 m-0">Activity</p>
       </li>
       <li class="fs-4 btn btn-dark d-flex bg-transparent border-0 gap-3 offcanvas-button px-4" data-button="logout">
@@ -73,7 +73,7 @@
     <ul data-js="media-list" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-gap-5 place-items-center p-0 m-0 pb-5"></ul>
   </div>
   <div class="d-flex mx-auto pb-4 pt-5 max-w-fit d-none" data-container="page-navigation-buttons">
-    <div data-js="available-pages" class="d-flex flex-row gap-4" style="overflow: overlay; width: 7rem;">
+    <div data-js="available-pages" data-filter="" class="d-flex flex-row gap-4" style="overflow: overlay; width: 7rem;">
     </div>
   </div>
   <script type="module" src="./app.js"></script>
